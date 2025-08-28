@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ "The personal Webpage of Jonathan Günthner. I am a mathematician at the University in Augsburg, I also like to code hence this website."|add_description }}
+    {% load_css "navigation" %}
+    {% load_css "random_math_field" %}
+    <style>
+        div {
+            margin-bottom: 6px;
+        }
+
+        .opti-bold {
+            color: black;
+            text-decoration: none;
+            font-weight: bolder;
+        }
+
+        .opti-bold:hover {
+            text-decoration: black underline;
+        }
+
+        .rainbow-text {
+            font-weight: bolder;
+            background-image: linear-gradient(90deg, red, orange, yellow, green, blue, violet);
+            color: transparent;
+            -webkit-background-clip: text;
+            filter: brightness(80%);
+        }
+
+        .accessibility-only {
+            position: absolute;
+            left: -10000px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        pre {
+            font: inherit
+        }
+
+        .barely-visible {
+            opacity: 80%;
+        }
+
+        .plain-link {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+    {% load_js "client_name" load_async="True" %}
+{% endblock %}
+{% block content %}
+    <h1>The personal webpage of
+        <a class="plain-link" href="https://en.wikipedia.org/wiki/Jonathan_(name)">Jonathan</a>
+        <a class="plain-link" href="https://en.wikipedia.org/wiki/G%C3%BCnthner">Günthner</a>
+    </h1>
+    <!--<div>
+        <h3 style="display: inline">Hello dear <i class="client-name"><?php echo client_name(); ?></i>,</h3>
+        <span style="width: 1em; display: inline-block;"></span>
+        <?php include "$root/dev/code/php/name_changer.php" ?>
+    </div>-->
+    <div>
+        I am a mathematician that likes to code
+        <span class="barely-visible">
+        (and a <a class="plain-link" href="https://de.wikipedia.org/wiki/Eichh%C3%B6rnchen">squirrel</a>)
+    </span>.
+    </div>
+    <div>
+        I am currently stu<a class="opti-bold" href="https://en.wikipedia.org/wiki/Pun">dying</a> in
+        my <?php echo ordinal(get_semester()); ?> semester at the university in <a
+            href="https://en.wikipedia.org/wiki/Beauty">Augsburg</a> and struggling with
+        <a class="rainbow-text" href="https://en.wikipedia.org/wiki/Depression_(mood)">depression</a>. Perhaps
+        the <span class="random-math-field" data-singular="<FIELD> has" data-plural="<FIELD> have">algebra has</span>
+        gotten
+        to me...
+    </div>
+    <div>
+        Did you know that
+        <a class="plain-link" href="https://guenthner.xyz/math/paper"><?php iezlatex('
+            \LARGE $\displaystyle \ordmg{p^k}(m) = \ordmg{p}(m) \cdot p^{\max(0, k - k_0 + 1)} $
+            ') ?></a>
+        for
+        <a class="plain-link" href="https://en.wikipedia.org/wiki/2"><?php iezlatex('\LARGE $ p\not=2 $') ?></a>?
+    </div>
+    <div>
+        <pre>
+Kind regards,
+J. Günthner</pre>
+    </div>
+    <div>
+        <pre>
+P.S.:
+Here are a couple of links:</pre>
+        <ul class="navigation">
+            <li><a href="{% url 'root:math' %}">Math</a></li>
+            <li><a href="{% url 'root:pretty' %}">Pretty</a></li>
+            <li><a href="{% url 'root:memes' %}">Memes</a></li>
+            <li><a href="{% url 'root:creations' %}" style="font-family: monospace;">Creations</a></li>
+            <li>My Mail Address: <a href="mailto:j@guenthner.xyz">j@guenthner.xyz</a></li>
+            <li>My github: <a href="https://github.com/Askhor">Askhor</a></li>
+            <li style="display: none"><a rel="me" href="https://mastodon.social/@guenthner">Mastodon</a></li>
+            <li>My <a href="https://guenthner.xyz/static/info/J. Günthner - Key.gpg" download>GPG Public Key</a></li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block post %}
+    {% load_js random_math_field %}
+{% endblock %}
+
+<!--
+
+
+
+
+
+<?php require "$root/dev/code/php/end_document.php" ?>
+</body>
+<script src="https://dev.guenthner.xyz/code/js/random_math_field.js" async></script>
+</html>-->
