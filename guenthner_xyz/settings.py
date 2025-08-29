@@ -120,6 +120,6 @@ SESSION_COOKIE_SECURE = True
 ALLOWED_HOSTS = [
     prefix + postfix
     for prefix in
-    ["*.guenthner.xyz", "87.106.77.210", "127.0.0.1", "localhost"]
+    ["guenthner.xyz", "*.guenthner.xyz", "87.106.77.210", "127.0.0.1", "localhost"]
     for postfix in
     ["", ":8000"]]
