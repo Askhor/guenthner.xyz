@@ -21,8 +21,6 @@ with open("/home/www-data/django/secret_key.txt") as f:
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
 
-ALLOWED_HOSTS = []
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -119,3 +117,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
+ALLOWED_HOSTS = ["*.guenthner.xyz"]
