@@ -9,11 +9,12 @@ def default_render(request: HttpRequest, template_name: str, context) -> HttpRes
 def _get_parent_paths(request: HttpRequest) -> list:
     path_components = request.path.strip("/").split("/")
 
-    cumulative_path = "https" + request.get_host()
+    cumulative_path = "https://" + request.get_host()
     output = [{"name": "root",
                "path": cumulative_path}]
 
     for component in path_components:
+        if component.strip() == "": continue
         cumulative_path += "/" + component
         output.append({"name": component,
                        "path": cumulative_path})
