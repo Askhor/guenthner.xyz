@@ -117,4 +117,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
-ALLOWED_HOSTS = ["*.guenthner.xyz"]
+ALLOWED_HOSTS = ["*.guenthner.xyz", "87.106.77.210"]
