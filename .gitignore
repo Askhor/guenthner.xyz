@@ -1,3 +1,6 @@
 .idea
 .venv
+makefile
+scripts
+*.sh
 db.sqlite3
