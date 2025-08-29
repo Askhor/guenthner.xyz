@@ -7,7 +7,7 @@
     <title>{{ title|default:"Untitled Page" }}</title>
     <meta name="author" content="{{ author|default:"Günthner" }}">
     <link rel="canonical" href="https://{{ request.get_host }}{{ request.path }}"/>
-    <link rel="stylesheet" href="https://{{ request.get_host }}/static/code/css/style.css">
+    {% load_css style %}
     <link rel="icon" type="image/png" href="https://{{ request.get_host }}/static/images/site/icon.png">
     {% block head %}
     {% endblock %}
