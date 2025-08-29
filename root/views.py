@@ -9,6 +9,10 @@ def index(request: HttpRequest):
         "title": "Günthner's Webpage"
     })
 
+def error404(request: HttpRequest):
+    return default_render(request, "root/404.html", {
+        "title": "404 Page"
+    })
 
 def math(request: HttpRequest):
     raise Http404
