@@ -1,9 +1,16 @@
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import render
 
 
 def default_render(request: HttpRequest, template_name: str, context) -> HttpResponse:
     return render(request, template_name, {**get_default_context(request), **context})
+
+
+def plain_redirect(to: str, permanent: bool) -> HttpResponse:
+    if permanent:
+        return HttpResponsePermanentRedirect(to)
+    else:
+        return HttpResponseRedirect(to)
 
 
 def _get_parent_paths(request: HttpRequest) -> list:

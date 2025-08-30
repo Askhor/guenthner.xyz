@@ -1,5 +1,6 @@
 .idea
 .venv
+secret_key.txt
 makefile
 scripts
 text
