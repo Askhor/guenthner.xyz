@@ -25,5 +25,5 @@ urlpatterns = [
     path("", include("root.urls")),
     path("404", views.error_page("404")),
     path("5xx", views.error_page("5xx")),
-    path("favicon.ico", lambda: plain_redirect("/images/site/icon.png", True))
+    path("favicon.ico", lambda *args: plain_redirect("/images/site/icon.png", True))
 ]
