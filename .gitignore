@@ -3,4 +3,5 @@
 makefile
 scripts
 *.sh
+static
 db.sqlite3
