@@ -5,6 +5,7 @@ from general import default_render
 
 
 def index(request: HttpRequest):
+    print("Test")
     return default_render(request, "root/index.html", {
         "title": "Günthner's Webpage"
     })
