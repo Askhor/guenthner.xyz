@@ -2,6 +2,7 @@
 .venv
 makefile
 scripts
+text
 *.sh
 static
 db.sqlite3

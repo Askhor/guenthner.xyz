@@ -5,14 +5,8 @@ from general import default_render
 
 
 def index(request: HttpRequest):
-    print("Test")
     return default_render(request, "root/index.html", {
         "title": "Günthner's Webpage"
-    })
-
-def error404(request: HttpRequest):
-    return default_render(request, "root/404", {
-        "title": "404 Page"
     })
 
 def math(request: HttpRequest):
