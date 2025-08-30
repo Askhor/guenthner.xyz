@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ "The content you were looking for could not be found."|add_description }}
+    {% load_css "navigation" %}
+{% endblock %}
+{% block content %}
+    <h2>There was an internal error: {{ request.status_code }}</h2>
+{% endblock %}
