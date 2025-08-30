@@ -15,8 +15,11 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-with open("/home/www-data/django/secret_key.txt") as f:
-    SECRET_KEY = f.read().strip()
+try:
+    with open("/home/www-data/django/secret_key.txt") as f:
+        SECRET_KEY = f.read().strip()
+except FileNotFoundError:
+    SECRET_KEY = input("Just enter something (SECRET_KEY): ")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True

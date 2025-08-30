@@ -4,5 +4,6 @@ makefile
 scripts
 text
 *.sh
+*.pyc
 static
 db.sqlite3
