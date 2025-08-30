@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ "Just some memes"|add_description }}
+    {% load_css "navigation" %}
+    {% load_css "image_formatting" %}
+{% endblock %}
+{% block content %}
+    <h1>Just some memes</h1>
+    <div>
+        {% for img in images %}
+            <a href='https://{{request.get_host}}/images/memes/{{ img }}'><img src='https://{{request.get_host}}/images/memes/{{ img }}' alt='{{ img|strip_file_extension }}'></a>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,3 +1,5 @@
+import os
+
 from django import template
 from django.template.defaultfilters import stringfilter
 from django.utils.html import format_html
@@ -22,3 +24,9 @@ def load_css(context: dict, path: str) -> str:
 @stringfilter
 def add_description(desc: str):
     return format_html(f'<meta name="description" content="{desc}">')
+
+
+@register.filter
+@stringfilter
+def strip_file_extension(path: str):
+    return os.path.splitext(path)[0]
