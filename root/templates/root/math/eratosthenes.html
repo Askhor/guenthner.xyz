@@ -53,11 +53,33 @@
             Well, canvases don't work here.....
         </canvas>
     </div>
+    <div data-setting-hidden="1">
+        <div class="header-like fade-on-hide setting-visibility-toggle"><b>Cheat Sheet</b></div>
+        <div id="constellation-settings-container" class="disappear-on-hide">
+            <div>
+                Number represented by cell <span class="latex">(x,y)</span> is <span
+                    class="latex">x + y*\text{width}</span>.
+            </div>
+            <div>Color of cell for <span class="latex">n</span> is
+                <div style="display: inline-block; vertical-align: top">
+                    <ul style="display: inline">
+                        <li><b style="color: #900">A color</b> if the number is a multiple of a lmb-marked number</li>
+                        <li><b>Black/dark grey</b> if the number is rmb-marked depending on parity</li>
+                        <li><b>Light grey</b> if the number is 0,1 or a multiple of a rmb-marked number</li>
+                        <li><b>White</b> otherwise</li>
+                    </ul>
+                </div>
+            </div>
+            <div>
+                Text will appear on lmb-marked numbers.
+            </div>
+        </div>
+    </div>
     <script>
         document.getElementById("katex-script").addEventListener("load", _ => {
             console.log("Rendering LaTeX");
             document.querySelectorAll(".latex").forEach(el => {
-                katex.render(el.textContent, el, {displayMode: true});
+                katex.render(el.textContent, el);
             })
         })
     </script>
