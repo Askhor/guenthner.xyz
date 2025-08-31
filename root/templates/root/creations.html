@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ "My creations (mostly just minor funny little web apps)"|add_description }}
+    {% load_css "navigation" %}
+{% endblock %}
+{% block content %}
+    <h1>My creations</h1>
+    <ul>
+        <li><a href="{% url "root:chat" %}">Chat</a></li>
+        <li><a href="{% url "root:cowsay" %}">Cowsay</a></li>
+    </ul>
+{% endblock %}

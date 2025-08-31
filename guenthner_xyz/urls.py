@@ -23,7 +23,6 @@ app_name = "guenthner_xyz"
 urlpatterns = [
     # path("admin/", admin.site.urls),
     path("", include("root.urls")),
-    path("404", views.error_page("404")),
-    path("5xx", views.error_page("5xx")),
+    path("error/<int:status_code>", views.error_page),
     path("favicon.ico", lambda *args: plain_redirect("/images/site/icon.png", True))
 ]

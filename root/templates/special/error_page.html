@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% load utils %}
 {% block head %}
-    {{ "There was an internal error"|add_description }}
+    {{ "There was an error"|add_description }}
     {% load_css "navigation" %}
 {% endblock %}
 {% block content %}
-    <h2>There was an internal error: {{ status }}</h2>
+    <h2>There was an error: {{ status }}</h2>
+    <h3>{{ error_msg }}</h3>
 {% endblock %}

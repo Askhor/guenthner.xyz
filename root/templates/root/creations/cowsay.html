@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ "The output of the fortune command piped into the cowsay command"|add_description }}
+    {% load_css "navigation" %}
+    <style>
+        div.center {
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        pre.center {
+            display: inline-block;
+            text-align: left;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="center">
+        <pre class="center">{{ output }}</pre>
+
+    </div>
+    <div class="center">
+        <pre class="center">fortune | cowsay</pre>
+    </div>
+{% endblock %}
