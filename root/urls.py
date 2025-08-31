@@ -8,7 +8,9 @@ creations_urls = [path("", views.creations, name="creations"),
                   path("chat", views.chat, name="chat"),
                   path("cowsay", views.cowsay, name="cowsay")]
 
-pretty_urls = [path("", views.pretty, name="pretty"), ]
+pretty_urls = [path("", views.pretty, name="pretty"),
+               path("words", views.words, name="words"),
+               path("pictures", views.pictures, name="pictures"), ]
 
 urlpatterns = [
     path("", views.index, name="index"),

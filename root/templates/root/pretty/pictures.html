@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ "Some pretty pictures I made"|add_description }}
+    {% load_css "navigation" %}
+    {% load_css "image_formatting" %}
+{% endblock %}
+{% block content %}
+    <div>
+        {% for name, alt in images.items %}
+            <a href='https://{{ request.get_host }}/images/pictures'><img
+                    src='https://{{ request.get_host }}/images/pictures' alt='{{ alt }}'></a>
+        {% endfor %}
+    </div>
+{% endblock %}
