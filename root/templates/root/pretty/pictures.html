@@ -8,8 +8,8 @@
 {% block content %}
     <div>
         {% for name, alt in images.items %}
-            <a href='https://{{ request.get_host }}/images/pictures'><img
-                    src='https://{{ request.get_host }}/images/pictures' alt='{{ alt }}'></a>
+            <a href='https://{{ request.get_host }}/images/pictures/{{ name }}'>
+                <img src='https://{{ request.get_host }}/images/pictures/{{ name }}' alt='{{ alt }}'></a>
         {% endfor %}
     </div>
 {% endblock %}
