@@ -4,7 +4,7 @@ def run_cowsay():
     try:
         # Run `fortune` and capture its output
         pfortune = subprocess.run(
-            ["fortune"],
+            ["/usr/games/fortune"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             check=True,
@@ -13,7 +13,7 @@ def run_cowsay():
 
         # Pipe the fortune output into `cowsay`
         pcowsay = subprocess.run(
-            ["cowsay"],
+            ["/usr/games/cowsay"],
             input=pfortune.stdout,
             stdout=subprocess.PIPE,
             text=True
