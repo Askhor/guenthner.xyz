@@ -13,6 +13,9 @@
     {% endblock %}
 </head>
 <body>
+{% block pre %}
+{% endblock %}
+
 {% include "navigation_bar.html" %}
 <div id="main-container-container">
     <div id="main-container">
@@ -23,7 +26,7 @@
     </div>
     <div class="phantom-footer"></div>
 </div>
-</body>
+
 <footer>
     <div>
         {{ author|default:"Günthner" }}'s Website; {{ website_version|default:"Version not found" }}
@@ -32,4 +35,6 @@
 
 {% block post %}
 {% endblock %}
+</body>
+
 </html>
