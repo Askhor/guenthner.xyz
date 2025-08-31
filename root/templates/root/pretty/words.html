@@ -6,8 +6,9 @@
 {% endblock %}
 {% block content %}
     <h1>Some things that were fun to make and I find pretty</h1>
-    <ul class="navigation">
-        <li><a href="{% url "root:words" %}">Words</a></li>
-        <li><a href="{% url "root:pictures" %}">Pictures</a></li>
+    <ul>
+        {% for name in docs %}
+            <li><a href="https://{{ request.get_host }}/documents/stories/{{ name }}">{{ name }}</a></li>
+        {% endfor %}
     </ul>
 {% endblock %}
