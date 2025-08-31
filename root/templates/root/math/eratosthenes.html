@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ "A visually pleasing implementation of the sieve of Eratosthenes, a mathematical method for finding prime numbers."|add_description }}
+    {% load_css "navigation" %}
+    {% load_css "eratosthenes" %}
+    {% load_js "eratosthenes" extra_args="async" %}
+    <!-- KaTeX here -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.css"
+          integrity="sha384-o3WH+1yEhq+grOgz1BVYTZPyTlMXrDxnjN1By9/ba94JqJhva6wFm2Hb+URQX53v" crossorigin="anonymous">
+    <script id="katex-script" defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.js"
+            integrity="sha384-C5yZTsgLOfuizO9kb+hrB8uSBwwvZ4yenKWU0KmWl+7bkL6Tph/KbcOa3S4zdoRE"
+            crossorigin="anonymous"></script>
+    <style>
+        div {
+            margin-bottom: 0.34em;
+        }
+
+        .header-like {
+            margin-top: 1em;
+            margin-bottom: 0.4em;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <h1>The Sieve of Eratosthenes</h1>
+    <div>
+        <div class="header-like"><b>Controls</b></div>
+        <div>
+            <label for="table-width">Width</label>
+            <input id="table-width" type="text">
+            <label for="table-height">Height</label>
+            <input id="table-height" type="text">
+        </div>
+        <div>
+            <button id="create-table-button">Create Table</button>
+        </div>
+        <div data-setting-hidden="1">
+            <div class="header-like fade-on-hide setting-visibility-toggle"><b>Constellation Settings</b></div>
+            <div class="disappear-on-hide">(For a basic explanation refer to <a
+                    href="https://github.com/Askhor/NotesAboutPrimeConstellations/">Notes about prime constellations</a>)
+            </div>
+            <div id="constellation-settings-container" class="disappear-on-hide">
+
+            </div>
+        </div>
+    </div>
+    <div id="number-info">
+
+    </div>
+    <div>
+        <canvas id="table-root">
+            Well, canvases don't work here.....
+        </canvas>
+    </div>
+    <script>
+        document.getElementById("katex-script").addEventListener("load", _ => {
+            console.log("Rendering LaTeX");
+            document.querySelectorAll(".latex").forEach(el => {
+                katex.render(el.textContent, el, {displayMode: true});
+            })
+        })
+    </script>
+{% endblock %}
