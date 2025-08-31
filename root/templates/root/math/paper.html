@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ "A list of all the papers that I have written"|add_description }}
+    {% load_css "navigation" %}
+    <!-- KaTeX here -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.css"
+          integrity="sha384-o3WH+1yEhq+grOgz1BVYTZPyTlMXrDxnjN1By9/ba94JqJhva6wFm2Hb+URQX53v" crossorigin="anonymous">
+    <script id="katex-script" defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.js"
+            integrity="sha384-C5yZTsgLOfuizO9kb+hrB8uSBwwvZ4yenKWU0KmWl+7bkL6Tph/KbcOa3S4zdoRE"
+            crossorigin="anonymous"></script>
+{% endblock %}
+{% block content %}
+    <h1>My Paper</h1>
+    <ul class="navigation">
+        <li>
+            <a href="https://{{ request.get_host }}/documents/paper/Orbits.pdf">Die Anzahl an Orbits unter
+                Multiplikation modulo eine Zahl</a>
+            <div>This paper (in German) proves—amongst other things—the following formula:
+                <span class="latex">\newcommand{\ord}{\mathop{\text{ord}}} \ord_{p^k}(m) = \ord_{p}(m) \cdot p^{\max(0, k - k_0 + 1)}</span>
+            </div>
+        </li>
+        <li>
+            <a href="https://github.com/Askhor/Order-Formula/blob/main/Order%20Formula.pdf">work in progress on
+                github</a>
+            <div>
+                This paper investigates the formula from the previous paper more closely and derives inequalities for
+                perfect numbers.
+            </div>
+        </li>
+    </ul>
+
+    <script>
+        document.getElementById("katex-script").addEventListener("load", _ => {
+            console.log("Rendering LaTeX");
+            document.querySelectorAll(".latex").forEach(el => {
+                katex.render(el.textContent, el, {throwOnError: false});
+            })
+        })
+    </script>
+{% endblock %}
