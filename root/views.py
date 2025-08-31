@@ -28,7 +28,7 @@ def pretty(request: HttpRequest):
 def words(request: HttpRequest):
     return default_render(request, "root/pretty/words.html", {
         "title": "Pretty Words I wrote",
-        "docs": os.listdir(server_root / "documents" / "pictures"),
+        "docs": os.listdir(server_root / "documents" / "stories"),
     })
 
 
