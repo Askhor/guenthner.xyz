@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ "A fast simulation of the mandelbrot set using WebGL. The quality erodes as you zoom in too much."|add_description }}
+    {% load_css "navigation" %}
+    <link rel="stylesheet" href="{{ schost }}/css/hide_on_mobile.css"
+          media="screen and (max-width:600px)">
+    <!-- KaTeX here -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.css"
+          integrity="sha384-o3WH+1yEhq+grOgz1BVYTZPyTlMXrDxnjN1By9/ba94JqJhva6wFm2Hb+URQX53v" crossorigin="anonymous">
+    <script id="katex-script" defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.js"
+            integrity="sha384-C5yZTsgLOfuizO9kb+hrB8uSBwwvZ4yenKWU0KmWl+7bkL6Tph/KbcOa3S4zdoRE"
+            crossorigin="anonymous"></script>
+    <style>
+        #gl-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        input {
+            display: block;
+        }
+
+        #content-container {
+            cursor: default;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+        }
+
+        .glow {
+            text-shadow: 0 0 1px white;
+        }
+
+        /*.glow img {*/
+        /*    background: #FFF9;*/
+        /*    box-shadow: 0 0 10px #FFF9;*/
+        /*}*/
+
+        img {
+            pointer-events: none;
+        }
+
+        html {
+            overscroll-behavior-y: none;
+        }
+
+        body {
+            overscroll-behavior-y: none;
+        }
+
+        #download-button {
+            position: absolute;
+            top: 20px;
+            right: 200px;
+            z-index: 1;
+            background: grey;
+            border: 2px white;
+            border-radius: 1px
+        }
+
+        #download-button:hover {
+            background: darkgray;
+        }
+    </style>
+{% endblock %}
+{% block content_container %}
+    {% include "navigation_bar.html" %}
+    <div class="glow" style="position: absolute; top: 20px; right: 20px; z-index: 1">
+        <label for="iter-count">Iteration Count</label><input id="iter-count" type="range">
+        <label for="pulsation">Pulsation</label><input id="pulsation" type="range">
+        <label for="start-x">Start X</label><input id="start-x" type="range">
+        <label for="start-y">Start Y</label><input id="start-y" type="range">
+        <label for="split-amount">Split Amount</label><input id="split-amount" type="range">
+        <label for="split-direction">Split Direction</label><input id="split-direction" type="range">
+        <label for="zoom">Zoom</label><input id="zoom" type="range">
+    </div>
+
+    <button id="download-button">
+        <img src="{{ schost }}/images/site/download_1.svg"
+             alt="Download">
+    </button>
+
+    <canvas id="gl-canvas"></canvas>
+
+    <div id="content-container">
+        <main class="glow">
+            <h1>The Mandelbrot Set</h1>
+
+            <div class="hide-on-mobile latex">
+                \begin{align*}
+                f_c(k+1) &= f_c(k)^2 + c \\\\
+                f_c(0) &= \text{Start} \\\\
+                \set{ z \in \mathbb{C} \mid &\lim_{k \to \infty} f_z(k) < \infty }
+                \end{align*}
+            </div>
+            <label for="debug-output"></label><textarea id="debug-output" readonly
+                                                        style="display: none; width: 700px; resize: none;"></textarea>
+        </main>
+    </div>
+
+    <script>
+        document.getElementById("katex-script").addEventListener("load", _ => {
+            console.log("Rendering LaTeX");
+            document.querySelectorAll(".latex").forEach(el => {
+                katex.render(el.textContent, el, {displayMode: true});
+            })
+        })
+    </script>
+    {% load_js "mandelbrot" extra_args="defer" %}
+{% endblock %}

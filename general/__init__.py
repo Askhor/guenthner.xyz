@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import render
 
@@ -6,7 +7,7 @@ def default_render(request: HttpRequest, template_name: str, context) -> HttpRes
     return render(request, template_name, {**get_default_context(request), **context})
 
 
-def plain_redirect(to: str, permanent: bool=False) -> HttpResponse:
+def plain_redirect(to: str, permanent: bool = False) -> HttpResponse:
     if permanent:
         return HttpResponsePermanentRedirect(to)
     else:
@@ -32,4 +33,5 @@ def _get_parent_paths(request: HttpRequest) -> list:
 def get_default_context(request: HttpRequest):
     return {
         "parent_paths": _get_parent_paths(request),
+        "schost": "https://guenthner.xyz" if settings.DEBUG else f"https://{request.get_host()}",
     }

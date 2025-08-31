@@ -16,6 +16,7 @@
 {% block pre %}
 {% endblock %}
 
+{% block content_container %}
 {% include "navigation_bar.html" %}
 <div id="main-container-container">
     <div id="main-container">
@@ -32,6 +33,8 @@
         {{ author|default:"Günthner" }}'s Website; {{ website_version|default:"Version not found" }}
     </div>
 </footer>
+
+{% endblock %}
 
 {% block post %}
 {% endblock %}

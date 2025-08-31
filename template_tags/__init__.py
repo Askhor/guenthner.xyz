@@ -8,16 +8,15 @@ register = template.Library()
 
 
 @register.simple_tag(takes_context=True)
-def load_js(context: dict, path: str, load_async=False) -> str:
-    request = context["request"]
+def load_js(context: dict, path: str, extra_args="") -> str:
     return format_html(
-        f'<script src="https://{request.get_host()}/js/{path}.js" {"async" if load_async else ""}></script>')
+        f'<script src="{context["schost"]}/js/{path}.js" {extra_args}></script>')
 
 
 @register.simple_tag(takes_context=True)
 def load_css(context: dict, path: str) -> str:
     request = context["request"]
-    return format_html(f'<link rel="stylesheet" href="https://{request.get_host()}/css/{path}.css">')
+    return format_html(f'<link rel="stylesheet" href="{context["schost"]}/css/{path}.css">')
 
 
 @register.filter
