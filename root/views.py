@@ -1,10 +1,9 @@
-# Create your views here.
-import os
 from pathlib import Path
-
+from subprocess import run
 from django.http import HttpRequest, Http404
 
 from general import default_render
+from general.cowsay import run_cowsay
 
 
 def index(request: HttpRequest):
@@ -18,7 +17,9 @@ def math(request: HttpRequest):
 
 
 def pretty(request: HttpRequest):
-    raise Http404
+    return default_render(request, "root/pretty/pretty.html", {
+        "title": "Pretty Stuff I made"
+    })
 
 
 def memes(request: HttpRequest):
@@ -29,7 +30,7 @@ def memes(request: HttpRequest):
 
 
 def creations(request: HttpRequest):
-    return default_render(request, "root/creations.html", {
+    return default_render(request, "root/creations/creations.html", {
         "title": "Creations"
     })
 
@@ -37,7 +38,7 @@ def creations(request: HttpRequest):
 def cowsay(request: HttpRequest):
     return default_render(request, "root/creations/cowsay.html", {
         "title": "Cowsay",
-        "output": "hi, there!"
+        "output": run_cowsay()
     })
 
 

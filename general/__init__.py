@@ -6,7 +6,7 @@ def default_render(request: HttpRequest, template_name: str, context) -> HttpRes
     return render(request, template_name, {**get_default_context(request), **context})
 
 
-def plain_redirect(to: str, permanent: bool) -> HttpResponse:
+def plain_redirect(to: str, permanent: bool=False) -> HttpResponse:
     if permanent:
         return HttpResponsePermanentRedirect(to)
     else:

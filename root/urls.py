@@ -8,10 +8,12 @@ creations_urls = [path("", views.creations, name="creations"),
                   path("chat", views.chat, name="chat"),
                   path("cowsay", views.cowsay, name="cowsay")]
 
+pretty_urls = [path("", views.pretty, name="pretty"), ]
+
 urlpatterns = [
     path("", views.index, name="index"),
     path("math/", views.math, name="math"),
-    path("pretty/", views.pretty, name="pretty"),
+    path("pretty/", include(pretty_urls)),
     path("memes", views.memes, name="memes"),
     path("creations/", include(creations_urls)),
 ]

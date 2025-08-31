@@ -20,9 +20,13 @@ from general import plain_redirect
 from . import views
 
 app_name = "guenthner_xyz"
+
+error_urls = [path("", lambda *args: plain_redirect("/")),
+              path("<int:status_code>", views.error_page), ]
+
 urlpatterns = [
     # path("admin/", admin.site.urls),
     path("", include("root.urls")),
-    path("error/<int:status_code>", views.error_page),
+    path("error/", include(error_urls)),
     path("favicon.ico", lambda *args: plain_redirect("/images/site/icon.png", True))
 ]
