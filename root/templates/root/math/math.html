@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ "All my math related internet content"|add_description }}
+    {% load_css "navigation" %}
+    <style>
+        .image-container {
+            position: absolute;
+            z-index: 1;
+            top: 0;
+            right: 0;
+            width: 60vw;
+        }
+
+        .image-container img {
+            width: 100%;
+        }
+
+        #main-container {
+            min-height: calc(60vw * 1.618);
+        }
+
+        main {
+            position: relative;
+            z-index: 2;
+        }
+    </style>
+{% endblock %}
+{% block pre %}
+    <div class="image-container">
+        <img src="https://{{ request.get_host }}/images/site/math/mandel.png" alt="Mandelbrot-Set">
+        <div class="phantom-footer"></div>
+    </div>
+{% endblock %}
+{% block content %}
+    <h1>The Math-Corner</h1>
+    <ul class="navigation">
+        <li><a href="{% url "root:paper" %}">Paper</a></li>
+        <li><a href="{% url "root:mandelbrot" %}">Mandelbrot</a></li>
+        <li><a href="{% url "root:eratosthenes" %}">Eratosthenes</a></li>
+    </ul>
+{% endblock %}
