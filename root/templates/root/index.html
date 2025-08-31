@@ -4,6 +4,12 @@
     {{ "The personal Webpage of Jonathan Günthner. I am a mathematician at the University in Augsburg, I also like to code hence this website."|add_description }}
     {% load_css "navigation" %}
     {% load_css "random_math_field" %}
+    <!-- KaTeX here -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.css"
+          integrity="sha384-o3WH+1yEhq+grOgz1BVYTZPyTlMXrDxnjN1By9/ba94JqJhva6wFm2Hb+URQX53v" crossorigin="anonymous">
+    <script id="katex-script" defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.js"
+            integrity="sha384-C5yZTsgLOfuizO9kb+hrB8uSBwwvZ4yenKWU0KmWl+7bkL6Tph/KbcOa3S4zdoRE"
+            crossorigin="anonymous"></script>
     <style>
         div {
             margin-bottom: 6px;
@@ -78,11 +84,9 @@
     </div>
     <div>
         Did you know that
-        <a class="plain-link" href="https://guenthner.xyz/math/paper"><?php iezlatex('
-            \LARGE $\displaystyle \ordmg{p^k}(m) = \ordmg{p}(m) \cdot p^{\max(0, k - k_0 + 1)} $
-            ') ?></a>
+        <a class="plain-link latex" href="https://guenthner.xyz/math/paper">\newcommand{\ord}{\mathop{\text{ord}}} \ord_{p^k}(m) = \ord_{p}(m) \cdot p^{\max(0, k - k_0 + 1)}</a>
         for
-        <a class="plain-link" href="https://en.wikipedia.org/wiki/2"><?php iezlatex('\LARGE $ p\not=2 $') ?></a>?
+        <a class="plain-link latex" href="https://en.wikipedia.org/wiki/2">p\not=2</a>?
     </div>
     <div>
         <pre>
@@ -108,4 +112,12 @@ Here are a couple of links:</pre>
 
 {% block post %}
     {% load_js "random_math_field" %}
+    <script>
+        document.getElementById("katex-script").addEventListener("load", _ => {
+            console.log("Rendering LaTeX");
+            document.querySelectorAll(".latex").forEach(el => {
+                katex.render(el.textContent, el);
+            })
+        })
+    </script>
 {% endblock %}
