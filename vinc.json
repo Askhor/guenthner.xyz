@@ -1,0 +1,13 @@
+{
+	"template": "<YEAR>.<MONTH>.<COUNTER>",
+	"version": "2025.9.3",
+	"YEAR": 2025,
+	"MONTH": 9,
+	"COUNTER": 3,
+	"targets": {
+		"general/__init__.py": {
+			"find": "\"website_version\"\\s*:\\s*\"<VERSION>\"",
+			"replace": "\"website_version\": \"<VERSION>\""
+		}
+	}
+}
