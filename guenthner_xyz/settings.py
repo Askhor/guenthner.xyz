@@ -28,13 +28,15 @@ DEBUG = os.environ["DEBUG"] == "true" if "DEBUG" in os.environ else False
 # Application definition
 
 INSTALLED_APPS = [
-    "root.apps.RootConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
+    "dev.apps.DevConfig",
+    "root.apps.RootConfig",
 ]
 
 MIDDLEWARE = [

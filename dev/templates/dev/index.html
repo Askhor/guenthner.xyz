@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load utils %}
+
+{% block head %}
+    {{ "Some dev stuff"|add_description }}
+    {% load_css "navigation" %}
+{% endblock %}
+
+{% block content %}
+    <h1>Dev Stuff</h1>
+    <ul class="navigation">
+        <li><a href="{% url "dev:index" %}admin">Admin</a></li>
+    </ul>
+{% endblock %}
