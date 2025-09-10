@@ -98,7 +98,7 @@
         {% for msg in messages %}
             <div class='{% if msg.user.is_staff %} admin-message {% endif %} message'>
                 <div class='message-header'>
-                    <span>{{ msg.user }} - <span style='display: inline-block'>{{ msg.time }}</span></span>
+                    <span>{{ msg.user|default:"Anonymous" }} - <span style='display: inline-block'>{{ msg.time }}</span></span>
                     {% if msg.user.is_staff %}
                         <span class='admin'>admin</span>
                     {% endif %}
