@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import json
 import os
 from pathlib import Path
 
@@ -75,7 +76,7 @@ WSGI_APPLICATION = "guenthner_xyz.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-"Password For Django And guenthner.xyz"
+myenv = json.load(Path("env.json"))
 
 if DEBUG:
     DATABASES = {
@@ -90,7 +91,7 @@ else:
             "ENGINE": "django.db.backends.mariadb",
             "NAME": "guenthner_xyz",
             "USER": "guenthner_xyz",
-            "PASSWORD": os.environ["DB_PASSWORD"],
+            "PASSWORD": myenv["DB Password"],
             "HOST": "localhost",
             "PORT": "",
         }
