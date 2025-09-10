@@ -76,7 +76,7 @@ WSGI_APPLICATION = "guenthner_xyz.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-myenv = json.load(str(Path("env.json").absolute()))
+myenv = json.loads(str(Path("env.json").read_text()))
 
 if DEBUG:
     DATABASES = {
