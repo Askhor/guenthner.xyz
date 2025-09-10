@@ -150,7 +150,9 @@ ALLOWED_HOSTS = [
     for postfix in
     ["", ":8000"]]
 
-CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ["guenthner.xyz", "www.guenthner.xyz", "private.guenthner.xyz"]]
+CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in
+                        ["guenthner.xyz", "www.guenthner.xyz", "private.guenthner.xyz", "localhost", "127.0.0.1",
+                         "87.106.77.210"]]
 
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
