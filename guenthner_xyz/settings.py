@@ -138,6 +138,8 @@ if not DEBUG:
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 ALLOWED_HOSTS = [
@@ -147,7 +149,7 @@ ALLOWED_HOSTS = [
     for postfix in
     ["", ":8000"]]
 
-CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS]
+CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ["guenthner.xyz", "www.guenthner.xyz", "private.guenthner.xyz"]]
 
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
