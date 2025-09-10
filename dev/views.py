@@ -21,7 +21,7 @@ def view_log(request: HttpRequest, service: str, name: str):
 
     try:
         content = file.read_text(encoding="utf-8")
-    except (FileNotFoundError, IOError) as e:
+    except Exception as e:
         content = f"Could not read file {file}:\n{e}"
 
     return HttpResponse(content, content_type="text/plain; charset=utf-8")
