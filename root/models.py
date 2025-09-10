@@ -1,4 +1,6 @@
+from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import SET_NULL
 
 
 class GlobalPermission(models.Model):
@@ -12,3 +14,9 @@ class GlobalPermission(models.Model):
             ("admin", "Admin functions"),
             ("ffs", "FFS")
         ]
+
+
+class ChatMessage(models.Model):
+    message = models.TextField()
+    user = models.ForeignKey(User, on_delete=SET_NULL, null=True)
+    time = models.DateTimeField(auto_now_add=True)

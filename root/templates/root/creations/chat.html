@@ -1,20 +1,125 @@
 {% extends "base.html" %}
 {% load utils %}
 {% block head %}
-    {{ "A simple chat, currently once again work in progress" | add_description }}
+    {{ "A primitive global chat" | add_description }}
     {% load_css "navigation" %}
+    {% load_js "chat" %}
     <style>
-        div.center {
-            text-align: center;
-            padding-top: 50px;
+        form * {
+            display: block;
         }
 
-        pre.center {
-            display: inline-block;
-            text-align: left;
+        * {
+            scroll-behavior: smooth;
+        }
+
+        .accessibility-only {
+            position: absolute;
+            left: -10000px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        .message-header {
+            display: flex;
+        }
+
+        .message {
+            margin: 1em;
+            padding: 1em;
+            border: #aaa 3px solid;
+            border-radius: 1em;
+            background: #f7f7f7;
+        }
+
+        .admin {
+            flex-grow: 1;
+            color: red;
+            text-align: right;
+        }
+
+        .admin-message {
+            border-color: red;
+        }
+
+        #message-input {
+            width: 100%;
+            height: 5em;
+        }
+
+        sup {
+            vertical-align: top;
+            margin-right: 0.2em;
+        }
+
+        .inline {
+            display: inline;
+        }
+
+        #error-output {
+            color: darkred;
+        }
+
+        .hover-button {
+            display: block;
+            position: sticky;
+            font-family: sans-serif;
+            cursor: pointer;
+
+            margin-top: 0.3em;
+            background: linear-gradient(90deg, white 0%, #ddd 100px, #ddd calc(100% - 100px), white 100%);
+            border: none;
+
+            text-align: center;
+        }
+
+        .hover-button:hover {
+            background: linear-gradient(90deg, white 0%, #bbb 100px, #bbb calc(100% - 100px), white 100%);
+        }
+
+        #reload-button {
+            top: 0;
+        }
+
+        #scroll-button {
+            bottom: 0;
         }
     </style>
 {% endblock %}
 {% block content %}
-    <h3>A simple chat, currently once again work in progress</h3>
+    <h3>A primitive global Chat</h3>
+    <div>
+        You are visible as {{ request.user }}
+    </div>
+    <div id="reload-button" class="show-on-js hover-button">Load newest messages</div>
+    <div style="margin: 3em">
+        {% for msg in messages %}
+            <div class='{% if msg.user.is_staff %} admin-message {% endif %} message'>
+                <div class='message-header'>
+                    <span>{{ msg.user }} - <span style='display: inline-block'>{{ msg.time }}</span></span>
+                    {% if msg.user.is_staff %}
+                        <span class='admin'>admin</span>
+                    {% endif %}
+                </div>
+                <div>
+                    {{ msg.message }}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div id="scroll-button" class="show-on-js hover-button">Scroll to bottom</div>
+    <div style="margin-bottom: 5em">
+        <form id="message-form" method="post" action="http://localhost:8000/creations/chat">
+            {% csrf_token %}
+            <label for="message-input" class="accessibility-only">
+                Message
+            </label>
+            <textarea name="message" id="message-input" class="message"
+                      placeholder="Enter your message here"></textarea>
+            <button class="inline">Send</button>
+            <span class="inline" id="error-output">{{ error_msg|default:"" }}</span>
+        </form>
+    </div>
 {% endblock %}
