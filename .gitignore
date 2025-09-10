@@ -8,3 +8,4 @@ text
 *.pyc
 static
 db.sqlite3
+__pycache__/
