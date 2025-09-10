@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from django.contrib.auth.decorators import login_required, permission_required
+from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
 
 from general import default_render
@@ -25,3 +26,15 @@ def view_log(request: HttpRequest, service: str, name: str):
         content = f"Could not read file {file}:\n{e}"
 
     return HttpResponse(content, content_type="text/plain; charset=utf-8")
+
+
+def view_headers(request: HttpRequest):
+    if request.GET is None or request.GET.get("pwd", default="") != "fml as it sucks!":
+        raise PermissionDenied
+
+    result = ""
+
+    for name, value in request.headers.items():
+        result += f"{name}: {value}\n"
+
+    return HttpResponse(result, content_type="text/plain; charset=utf-8")

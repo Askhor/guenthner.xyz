@@ -5,5 +5,6 @@ from . import views
 app_name = "dev"
 urlpatterns = [
     path("", views.view_index, name="index"),
+    path("headers", views.view_headers, name="headers"),
     path("log/<slug:service>/<slug:name>", views.view_log, name="log"),
 ]
