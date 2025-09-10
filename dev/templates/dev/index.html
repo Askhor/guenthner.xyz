@@ -9,6 +9,7 @@
 {% block content %}
     <h1>Dev Stuff</h1>
     <ul class="navigation">
-        <li><a href="{% url "dev:index" %}admin">Admin</a></li>
+        <li><a href="{{ schost }}/admin/">Admin</a></li>
+        <li><a href="{% url "dev:log" "nginx" "errors" %}">Logs</a></li>
     </ul>
 {% endblock %}

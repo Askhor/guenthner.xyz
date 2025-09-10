@@ -129,3 +129,7 @@ ALLOWED_HOSTS = [
     ["guenthner.xyz", "*.guenthner.xyz", "87.106.77.210", "127.0.0.1", "localhost"]
     for postfix in
     ["", ":8000"]]
+
+LOGIN_URL = "/login"
+LOGIN_REDIRECT_URL = "/"
+SITE_ID = 2

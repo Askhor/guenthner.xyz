@@ -30,7 +30,13 @@ def _get_parent_paths(request: HttpRequest) -> list:
     return output
 
 
-def get_default_context(request: HttpRequest):
-    return {"parent_paths": _get_parent_paths(request),
-            "schost": "https://guenthner.xyz" if settings.DEBUG else f"https://{request.get_host()}",
-            "website_version": "2025.9.3"}
+def get_default_context(request: HttpRequest) -> HttpResponse:
+    schost = "https://guenthner.xyz" if settings.DEBUG or request is None else f"https://{request.get_host()}"
+
+    response = {"schost": schost,
+                "website_version": "2025.9.4"}
+
+    if request is not None:
+        response["parent_paths"] = _get_parent_paths(request)
+
+    return response

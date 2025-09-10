@@ -17,22 +17,24 @@
 {% endblock %}
 
 {% block content_container %}
-{% include "navigation_bar.html" %}
-<div id="main-container-container">
-    <div id="main-container">
-        <main>
-            {% block content %}
-            {% endblock %}
-        </main>
+    {% if not suppress_navbar %}
+        {% include "navigation_bar.html" %}
+    {% endif %}
+    <div id="main-container-container">
+        <div id="main-container">
+            <main>
+                {% block content %}
+                {% endblock %}
+            </main>
+        </div>
+        <div class="phantom-footer"></div>
     </div>
-    <div class="phantom-footer"></div>
-</div>
 
-<footer>
-    <div>
-        {{ author|default:"Günthner" }}'s Website; {{ website_version|default:"Version not found" }}
-    </div>
-</footer>
+    <footer>
+        <div>
+            {{ author|default:"Günthner" }}'s Website; {{ website_version|default:"Version not found" }}
+        </div>
+    </footer>
 
 {% endblock %}
 
