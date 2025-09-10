@@ -20,7 +20,7 @@ def view_log(request: HttpRequest, service: str, name: str):
     file = Path("/var/log") / service / f"{name}.log"
 
     try:
-        content = file.read_text(encoding="utf-8")
+        content = file.read_bytes()
     except Exception as e:
         content = f"Could not read file {file}:\n{e}"
 
