@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from django.contrib.auth.decorators import login_required, permission_required
@@ -29,7 +30,15 @@ def view_log(request: HttpRequest, service: str, name: str):
 
 
 def view_headers(request: HttpRequest):
-    if request.GET is None or request.GET.get("pwd", default="") != "fml as it sucks!":
+    params = {}
+
+    for key in request.GET.keys():
+        params[key] = request.GET[key]
+    for key in request.POST.keys():
+        params[key] = request.POST[key]
+
+
+    if params["pwd"] != "fml as it sucks!":
         raise PermissionDenied
 
     result = ""
