@@ -78,6 +78,8 @@ WSGI_APPLICATION = "guenthner_xyz.wsgi.application"
 
 if not DEBUG:
     myenv = json.loads(str(Path("env.json").read_text()))
+else:
+    myenv = {}
 
 if DEBUG:
     DATABASES = {
@@ -120,11 +122,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
@@ -147,6 +146,8 @@ ALLOWED_HOSTS = [
     ["guenthner.xyz", "*.guenthner.xyz", "87.106.77.210", "127.0.0.1", "localhost"]
     for postfix in
     ["", ":8000"]]
+
+CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS]
 
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
