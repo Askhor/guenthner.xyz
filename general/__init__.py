@@ -1,6 +1,10 @@
 from django.conf import settings
+from django.contrib import sitemaps
+from django.contrib.sitemaps.views import sitemap
 from django.http import HttpRequest, HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import path
+from django.urls import reverse
 
 
 def default_render(request: HttpRequest, template_name: str, context) -> HttpResponse:
@@ -40,3 +44,21 @@ def get_default_context(request: HttpRequest) -> HttpResponse:
         response["parent_paths"] = _get_parent_paths(request)
 
     return response
+
+
+class MySitemap(sitemaps.Sitemap):
+    priority = 0.5
+    changefreq = "monthly"
+
+    def __init__(self, *items):
+        self.my_items = items
+
+    def items(self):
+        return self.my_items
+
+    def location(self, item):
+        return reverse(item)
+
+    @classmethod
+    def with_path(cls, route: str, *items):
+        return path(route, sitemap, {"sitemaps": {"main": cls(*items), }})

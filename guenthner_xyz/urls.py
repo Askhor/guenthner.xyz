@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.views import LoginView
 from django.urls import path, include
 
-from general import plain_redirect, get_default_context
+from general import plain_redirect, get_default_context, MySitemap
 from . import views
 
 error_urls = [path("", lambda *args: plain_redirect("/")),
@@ -13,11 +13,16 @@ account_urls = [path("login",
                          template_name="special/login.html",
                          extra_context={**get_default_context(None), "suppress_navbar": True}, ), name="login")]
 
+indexed_routes = "index,math,eratosthenes,mandelbrot,paper,pretty,memes,words,pictures,creations,chat,cowsay".split(",")
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include(account_urls)),
     path("dev/", include("dev.urls")),
     path("", include("root.urls")),
     path("error/", include(error_urls)),
-    path("favicon.ico", lambda *args: plain_redirect("/images/site/icon.png", True))
+    path("favicon.ico", lambda *args: plain_redirect("/images/site/icon.png", True)),
+    MySitemap.with_path("sitemap.xml",
+                        *[f"root:{i}" for i in indexed_routes]),
+
 ]
