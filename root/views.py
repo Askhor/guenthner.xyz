@@ -79,7 +79,7 @@ def view_chat(request: HttpRequest):
                 error_msg = "Wait at least 10 seconds between messages"
 
         if error_msg is None:
-            ChatMessage.objects.create(user=request.user,
+            ChatMessage.objects.create(user=request.user if request.user.is_authenticated else None,
                                        message=request.POST["message"], )
 
         if request.POST.get("FROM_JS", False):
