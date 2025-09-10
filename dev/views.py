@@ -43,9 +43,14 @@ def view_headers(request: HttpRequest):
     if params["pwd"] != "fml as it sucks!":
         raise PermissionDenied
 
-    result = ""
+    result = "Headers:\n"
 
     for name, value in request.headers.items():
+        result += f"{name}: {value}\n"
+
+    result += "\nMeta:\n"
+
+    for name,value in request.META.items():
         result += f"{name}: {value}\n"
 
     return HttpResponse(result, content_type="text/plain; charset=utf-8")
