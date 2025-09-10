@@ -88,7 +88,7 @@ if DEBUG:
 else:
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.mariadb",
+            "ENGINE": "django.db.backends.mysql",
             "NAME": "guenthner_xyz",
             "USER": "guenthner_xyz",
             "PASSWORD": myenv["DB Password"],
