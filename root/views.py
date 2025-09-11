@@ -28,7 +28,7 @@ def view_pretty(request: HttpRequest):
 def view_words(request: HttpRequest):
     return default_render(request, "root/pretty/words.html", {
         "title": "Pretty Words I wrote",
-        "docs": os.listdir(server_root / "documents" / "stories2"),
+        "docs": os.listdir(server_root / "documents" / "stories"),
     })
 
 
