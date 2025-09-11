@@ -4,6 +4,21 @@
 {% block head %}
     {% load_css "navigation" %}
     {% load_css "files/file_viewer" %}
+
+    <script>
+        function api_url(api, path) {
+            return "{% url "private:ffs" %}" + api + "/" + path
+        }
+
+        folders = [
+            {% for f in folders %}
+                "{{ f|escapejs }}",
+            {% endfor %}];
+        files = [
+            {% for f in files %}
+                "{{ f|escapejs }}",
+            {% endfor %}];
+    </script>
 {% endblock %}
 
 {% block content %}
@@ -56,12 +71,18 @@
                         <tr>
                             <td><span class="icon">📁</span></td>
                             <td><a href="{% url "private:api" "files" f %}">{{ f.name }}</a></td>
+                            <td>Folder</td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     {% endfor %}
                     {% for f in files %}
                         <tr>
-                            <td></td>
+                            <td id="icon-{{ f.name|base64e }}"></td>
                             <td><a href="{% url "private:api" "files" f %}">{{ f.name }}</a></td>
+                            <td id="type-{{ f.name|base64e }}"></td>
+                            <td id="size-{{ f.name|base64e }}"></td>
+                            <td></td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -74,4 +95,6 @@
             </td>-->
         </tr>
     </table>
+
+    {% load_js "files/add_metadata" extra_args="async" %}
 {% endblock %}

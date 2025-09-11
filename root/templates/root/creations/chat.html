@@ -98,20 +98,20 @@
         {% for msg in messages %}
             <div class='{% if msg.user.is_staff %} admin-message {% endif %} message'>
                 <div class='message-header'>
-                    <span>{{ msg.user|default:"Anonymous" }} - <span style='display: inline-block'>{{ msg.time }}</span></span>
+                    <span>{{ msg.user|default:"Anonymous" }} - <span style='display: inline-block'>{{ msg.time }} ({{ msg.time|timesince }} ago)</span></span>
                     {% if msg.user.is_staff %}
                         <span class='admin'>admin</span>
                     {% endif %}
                 </div>
                 <div>
-                    {{ msg.message }}
+                    {{ msg.message|linebreaks }}
                 </div>
             </div>
         {% endfor %}
     </div>
     <div id="scroll-button" class="show-on-js hover-button">Scroll to bottom</div>
     <div style="margin-bottom: 5em">
-        <form id="message-form" method="post" action="https://guenthner.xyz/creations/chat">
+        <form id="message-form" method="post" action="{% url "root:chat" %}">
             {% csrf_token %}
             <label for="message-input" class="accessibility-only">
                 Message

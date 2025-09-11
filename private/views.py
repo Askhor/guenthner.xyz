@@ -4,9 +4,11 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpRequest, HttpResponse, FileResponse, JsonResponse, \
     HttpResponseServerError
 from django.views.decorators.http import require_http_methods
+from magic.compat import detect_from_filename
 
 from general import default_render, exception_to_response, UserError
 from private.models import Setting
+from template_tags import base64e
 
 fs_root = Path(Setting.objects.get(name='fs_root').value)
 
@@ -19,6 +21,16 @@ def view_index(request: HttpRequest):
     })
 
 
+def require_path_exists(func):
+    def wrapper(request: HttpRequest, path: Path):
+        if not (fs_root / path).exists():
+            return HttpResponse(f"File {path} does not exist", status=404,
+                                content_type="text/plain; charset=utf-8")
+        return func(request, path)
+
+    return wrapper
+
+
 def check_path(request: HttpRequest, path: Path):
     if path.is_absolute():
         raise UserError("Path must not be absolute and it really looks like that")
@@ -29,12 +41,9 @@ def check_permissions(request: HttpRequest, path: Path):
 
 
 @require_http_methods(["GET"])
+@require_path_exists
 def api_raw(request: HttpRequest, path: Path):
     full_path = fs_root / path
-
-    if not full_path.exists():
-        return HttpResponse(f"File {full_path} does not exist", status=404,
-                            content_type="text/plain; charset=utf-8")
 
     if full_path.is_file():
         return FileResponse(open(full_path, "rb"))
@@ -66,11 +75,31 @@ def api_files(request: HttpRequest, path: Path):
     })
 
 
+@require_http_methods(["GET"])
+@require_path_exists
+def api_info(request: HttpRequest, path: Path):
+    full_path = fs_root / path
+
+    try:
+        mime = detect_from_filename(full_path).mime_type
+    except Exception:
+        # Sometimes the function just fails
+        mime = "text/plain;charset=utf-8"
+
+    return JsonResponse({
+        "path": str(path),
+        "name": path.name,
+        "size": full_path.stat().st_size,
+        "mime": mime,
+        "ascii key": base64e(path.name)
+    })
+
+
 @login_required
 @permission_required("private.ffs")
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
-    valid_apis = ["raw", "files"]
+    valid_apis = ["raw", "files", "info"]
 
     if api not in valid_apis:
         raise UserError(f"The requested API does not exist: {api}, the only options are {valid_apis}")
@@ -84,5 +113,7 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
             return api_raw(request, path)
         case "files":
             return api_files(request, path)
+        case "info":
+            return api_info(request, path)
 
     return HttpResponseServerError("Did not configure my stuff correctly")

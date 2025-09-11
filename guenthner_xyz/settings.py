@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "django.contrib.sitemaps",
+    "django.contrib.humanize",
     "dev.apps.DevConfig",
     "root.apps.RootConfig",
     "private.apps.PrivateConfig",
@@ -51,6 +52,9 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+if DEBUG:
+    MIDDLEWARE.append("dev.middleware.DebugMiddleware")
 
 ROOT_URLCONF = "guenthner_xyz.urls"
 

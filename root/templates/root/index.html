@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load utils %}
+{% load humanize %}
 {% block head %}
     {{ "The personal Webpage of Jonathan Günthner. I am a mathematician at the University in Augsburg, I also like to code hence this website."|add_description }}
     {% load_css "navigation" %}
@@ -75,7 +76,7 @@
     </div>
     <div>
         I am currently stu<a class="opti-bold" href="https://en.wikipedia.org/wiki/Pun">dying</a> in
-        my <?php echo ordinal(get_semester()); ?> semester at the university in <a
+        my {{ semester|ordinal }} semester at the university in <a
             href="https://en.wikipedia.org/wiki/Beauty">Augsburg</a> and struggling with
         <a class="rainbow-text" href="https://en.wikipedia.org/wiki/Depression_(mood)">depression</a>. Perhaps
         the <span class="random-math-field" data-singular="<FIELD> has" data-plural="<FIELD> have">algebra has</span>
@@ -84,7 +85,8 @@
     </div>
     <div>
         Did you know that
-        <a class="plain-link latex" href="https://guenthner.xyz/math/paper">\newcommand{\ord}{\mathop{\text{ord}}} \ord_{p^k}(m) = \ord_{p}(m) \cdot p^{\max(0, k - k_0 + 1)}</a>
+        <a class="plain-link latex" href="https://guenthner.xyz/math/paper">\newcommand{\ord}{\mathop{\text{ord}}}
+            \ord_{p^k}(m) = \ord_{p}(m) \cdot p^{\max(0, k - k_0 + 1)}</a>
         for
         <a class="plain-link latex" href="https://en.wikipedia.org/wiki/2">p\not=2</a>?
     </div>
