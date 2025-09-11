@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sitemaps",
     "dev.apps.DevConfig",
     "root.apps.RootConfig",
+    "private.apps.PrivateConfig",
 ]
 
 MIDDLEWARE = [

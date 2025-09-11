@@ -44,7 +44,8 @@ def get_default_context(request: HttpRequest) -> HttpResponse:
         schost = f"https://{request.get_host()}"
 
     response = {"schost": schost,
-                "website_version": "2025.9.4"}
+                "website_version": "2025.9.5",
+                "author": "J. Günthner"}
 
     if request is not None:
         response["parent_paths"] = _get_parent_paths(request)

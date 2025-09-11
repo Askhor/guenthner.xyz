@@ -27,6 +27,7 @@ urlpatterns = [
     path("", include(account_urls)),
     path("", include(debug_static_routes)),
     path("dev/", include("dev.urls")),
+    path("private/", include("private.urls")),
     path("", include("root.urls")),
     path("error/", include(error_urls)),
     path("favicon.ico", lambda *args: plain_redirect("/images/site/icon.png", True)),
