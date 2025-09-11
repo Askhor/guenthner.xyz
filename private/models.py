@@ -10,3 +10,7 @@ class GlobalPermission(models.Model):
         permissions = [
             ("ffs", "FFS")
         ]
+
+class Setting(models.Model):
+    name = models.CharField(max_length=128, blank=True)
+    value = models.CharField(max_length=128, blank=True)

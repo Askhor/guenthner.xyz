@@ -22,7 +22,7 @@ def plain_redirect(to: str, permanent: bool = False) -> HttpResponse:
 def _get_parent_paths(request: HttpRequest) -> list:
     path_components = request.path.strip("/").split("/")
 
-    cumulative_path = request.get_host()
+    cumulative_path = ""
     output = [{"name": "root",
                "path": cumulative_path}]
 
@@ -69,3 +69,20 @@ class MySitemap(sitemaps.Sitemap):
     @classmethod
     def with_path(cls, route: str, *items):
         return path(route, sitemap, {"sitemaps": {"main": cls(*items), }})
+
+
+def exception_to_response(exception, status: int):
+    def wrapper1(func):
+        def wrapper2(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except exception as e:
+                return HttpResponse(str(e), status=status, content_type="text/plain; charset=utf-8")
+
+        return wrapper2
+
+    return wrapper1
+
+
+class UserError(Exception):
+    pass

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load utils %}
+
+{% block head %}
+    {% load_css "navigation" %}
+    {% load_css "files/file_viewer" %}
+{% endblock %}
+
+{% block content %}
+    <!--<div id="path-view">
+
+    </div>
+    <input id="auto-reload" type="checkbox" checked>
+    <label for="auto-reload">Auto Reload</label>
+    <table id="file-view-container">
+        <tr>
+            <td style="display: flex">
+                <table id="file-view">
+
+                </table>
+            </td>
+            <td>
+                <div id="file-drop-area">
+                    Drop files here
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div>
+        <a id="download-link">Download directory (zip)</a>
+        <div id="error-msg"></div>
+    </div>-->
+
+    <h1>
+        Hello, {{ request.user }}
+    </h1>
+
+    <table id="file-view-container">
+        <tr>
+            <td style="display: flex">
+                <table id="file-view">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Size</th>
+                        <th></th>
+                    </tr>
+                    <tr class="thin-row">
+                        <th class="thin-row" colspan="5" style="text-align: left">Buttons go here</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for f in folders %}
+                        <tr>
+                            <td><span class="icon">📁</span></td>
+                            <td><a href="{% url "private:api" "files" f %}">{{ f.name }}</a></td>
+                        </tr>
+                    {% endfor %}
+                    {% for f in files %}
+                        <tr>
+                            <td></td>
+                            <td><a href="{% url "private:api" "files" f %}">{{ f.name }}</a></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </td>
+            <!--<td>
+                <div id="file-drop-area">
+                    Drop files here
+                </div>
+            </td>-->
+        </tr>
+    </table>
+{% endblock %}

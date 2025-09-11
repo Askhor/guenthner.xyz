@@ -10,6 +10,7 @@
     <h3>Hi, {{ request.user }}</h3>
 
     <ul class="navigation">
+        <li><a href="{% url "private:api" "files" %}">Files</a></li>
         <li>
             <form action="{% url 'logout' %}" method="post">
                 {% csrf_token %}
