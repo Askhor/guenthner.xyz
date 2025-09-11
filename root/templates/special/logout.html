@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ "The Logout Page"|add_description }}
+    {% load_css "navigation" %}
+    <style>
+        .error-msg {
+            color: darkred;
+        }
+
+        .spacing {
+            height: 10vh;
+        }
+
+        main, form {
+            text-align: center;
+        }
+
+        form div {
+            text-align: left;
+            width: fit-content;
+            margin: auto;
+        }
+
+        form div * {
+            display: block;
+        }
+    </style>
+{% endblock %}
+
+
+{% block content %}
+    <div class="spacing">
+    </div>
+
+    <p>
+        {% if user.is_authenticated %}
+            Log out failed, try again:
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Log Out</button>
+            </form>
+        {% else %}
+            Log out successful
+            <script>
+                setTimeout(() => {
+                    history.back()
+                }, 500)
+            </script>
+        {% endif %}
+    </p>
+
+{% endblock %}

@@ -157,5 +157,8 @@ CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in
                          "87.106.77.210"]]
 
 LOGIN_URL = "/login"
+LOGOUT_URL = "/logout"
 LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+PASSWORD_CHANGE_DONE_URL = "/change-password/done"
 SITE_ID = 2

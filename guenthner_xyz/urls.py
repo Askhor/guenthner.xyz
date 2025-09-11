@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordChangeDoneView
 from django.urls import path, include
 
 from general import plain_redirect, get_default_context, MySitemap
@@ -9,10 +9,30 @@ from . import views
 error_urls = [path("", lambda *args: plain_redirect("/")),
               path("<int:status_code>", views.error_page), ]
 
-account_urls = [path("login",
-                     LoginView.as_view(
-                         template_name="special/login.html",
-                         extra_context={**get_default_context(None), "suppress_navbar": True}, ), name="login")]
+account_urls = [path("login", LoginView.as_view(template_name="special/login.html",
+                                                extra_context={**get_default_context(None),
+                                                               "suppress_navbar": True,
+                                                               "title": "Login to guenthner.xyz"}, ), name="login"),
+                path("logout", LogoutView.as_view(template_name="special/logout.html",
+                                                  extra_context={**get_default_context(None),
+                                                                 "suppress_navbar": True,
+                                                                 "title:": "You have been logged out"}, ),
+                     name="logout")
+    ,
+                path("change-password",
+                     PasswordChangeView.as_view(template_name="special/change_password.html",
+                                                success_url=settings.PASSWORD_CHANGE_DONE_URL,
+                                                extra_context={**get_default_context(None),
+                                                               "suppress_navbar": True,
+                                                               "title": "Change your password for guenthner.xyz"}, ),
+                     name="change-password"),
+                path("change-password/done",
+                     PasswordChangeDoneView.as_view(template_name="special/change_password_done.html",
+                                                    extra_context={**get_default_context(None),
+                                                                   "suppress_navbar": True,
+                                                                   "title": "Changing your password successful"}, ),
+                     name="change-password-done")
+                ]
 
 indexed_routes = "index,math,eratosthenes,mandelbrot,paper,pretty,memes,words,pictures,creations,chat,cowsay".split(",")
 

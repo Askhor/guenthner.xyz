@@ -7,4 +7,15 @@
 
 {% block content %}
     <h1>FFS</h1>
+    <h3>Hi, {{ request.user }}</h3>
+
+    <ul class="navigation">
+        <li>
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Log Out</button>
+            </form>
+        </li>
+        <li><a href="{% url "change-password" %}">Change Password</a></li>
+    </ul>
 {% endblock %}
