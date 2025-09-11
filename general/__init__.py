@@ -1,10 +1,11 @@
-from django.conf import settings
 from django.contrib import sitemaps
 from django.contrib.sitemaps.views import sitemap
 from django.http import HttpRequest, HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import path
 from django.urls import reverse
+
+from guenthner_xyz import settings
 
 
 def default_render(request: HttpRequest, template_name: str, context) -> HttpResponse:
@@ -35,7 +36,12 @@ def _get_parent_paths(request: HttpRequest) -> list:
 
 
 def get_default_context(request: HttpRequest) -> HttpResponse:
-    schost = "https://guenthner.xyz" if settings.DEBUG or request is None else f"https://{request.get_host()}"
+    if settings.DEBUG:
+        schost = "http://localhost:8000"
+    elif request is None:
+        schost = "https://guenthner.xyz"
+    else:
+        schost = f"https://{request.get_host()}"
 
     response = {"schost": schost,
                 "website_version": "2025.9.4"}

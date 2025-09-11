@@ -1,4 +1,6 @@
-from django.http import HttpRequest
+from pathlib import Path
+
+from django.http import HttpRequest, FileResponse
 
 from general import default_render
 
@@ -27,3 +29,7 @@ def error_page(request: HttpRequest, status_code: int):
         "status": status_code,
         "error_msg": get_error_msg(status_code),
     })
+
+
+def view_debug_static(prepend: Path):
+    return lambda request, path: FileResponse(open(Path(prepend) / path, "rb"))

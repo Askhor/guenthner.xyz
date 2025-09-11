@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.views import LoginView
 from django.urls import path, include
@@ -15,9 +16,16 @@ account_urls = [path("login",
 
 indexed_routes = "index,math,eratosthenes,mandelbrot,paper,pretty,memes,words,pictures,creations,chat,cowsay".split(",")
 
+debug_static_routes = []
+
+if settings.DEBUG:
+    debug_static_routes = [path("js/<path:path>", views.view_debug_static("text/js")),
+                           path("css/<path:path>", views.view_debug_static("text/css")), ]
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include(account_urls)),
+    path("", include(debug_static_routes)),
     path("dev/", include("dev.urls")),
     path("", include("root.urls")),
     path("error/", include(error_urls)),
