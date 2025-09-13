@@ -32,11 +32,19 @@ if not DEBUG:
     LOGGING = {
         "version": 1,
         "disable_existing_loggers": False,
+        "formatters": {
+            "default": {
+                "format": "{asctime} [{levelname:>5}] {module:>10}: {message}",
+                "style": "{",
+                "datefmt": "%W %a %I:%M",
+            }
+        },
         "handlers": {
             "file": {
                 "level": "INFO",
                 "class": "logging.FileHandler",
                 "filename": "/var/log/django/guenthner_xyz.log",
+                "formatter": "default"
             },
         },
         "loggers": {
