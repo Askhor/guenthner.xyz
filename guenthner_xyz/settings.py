@@ -13,6 +13,8 @@ import json
 import os
 from pathlib import Path
 
+print("Hello, World!")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,6 +27,31 @@ except FileNotFoundError:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ["DEBUG"] == "true" if "DEBUG" in os.environ else False
+
+if not DEBUG:
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {
+            "file": {
+                "level": "INFO",
+                "class": "logging.FileHandler",
+                "filename": "/var/log/django/guenthner_xyz.log",
+            },
+        },
+        "loggers": {
+            "root": {
+                "handlers": ["file"],
+                "level": "DEBUG",
+                "propagate": False,
+            },
+            "django": {
+                "handlers": ["file"],
+                "level": "DEBUG",
+                "propagate": False,
+            }
+        }
+    }
 
 # Application definition
 
