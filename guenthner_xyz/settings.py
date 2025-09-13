@@ -57,6 +57,11 @@ if not DEBUG:
                 "handlers": ["file"],
                 "level": "DEBUG",
                 "propagate": False,
+            },
+            "my": {
+                "handlers": ["file"],
+                "level": "DEBUG",
+                "propagate": False,
             }
         }
     }

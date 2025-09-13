@@ -1,7 +1,10 @@
+import logging
 import subprocess
 from pathlib import Path
 
 from private.models import Setting
+
+log = logging.getLogger("my")
 
 fs_root = Path(Setting.objects.get(name='fs_root').value)
 img_icon_root = Path(Setting.objects.get(name='img_icon_root').value)
@@ -19,7 +22,14 @@ def create_icon(path: Path):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 
     if not icon_file.exists():
-        raise ValueError(f"Could not create image icon:\nStdout:\n{output.stdout.decode()}\nStderr:\n{output.stderr.decode()}")
+        msg = (f"Could not create image icon:\n"
+               f"Image path: {full_path}\n"
+               f"Icon path: {icon_file}\n"
+               f"Stdout:\n{output.stdout.decode()}\n"
+               f"Stderr:\n{output.stderr.decode()}")
+
+        log.error(msg)
+        raise ValueError(msg)
 
 
 def img_file_icon(path: Path) -> Path:
