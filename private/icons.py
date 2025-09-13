@@ -29,7 +29,7 @@ def create_icon(path: Path):
                f"Stderr:\n{output.stderr.decode()}")
 
         log.error(msg)
-        raise ValueError(msg)
+        raise RuntimeError(msg)
 
 
 def img_file_icon(path: Path) -> Path:

@@ -80,7 +80,10 @@ def api_files(request: HttpRequest, path: Path):
 @require_http_methods(["GET"])
 @require_path_exists
 def api_icon(request: HttpRequest, path: Path):
-    return FileResponse(open(img_file_icon(path), "rb"))
+    try:
+        return FileResponse(open(img_file_icon(path), "rb"))
+    except RuntimeError:
+        return HttpResponse(status=500)
 
 
 @require_http_methods(["GET"])
