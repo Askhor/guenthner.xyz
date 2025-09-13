@@ -7,7 +7,7 @@
 
     <script>
         function api_url(api, path) {
-            return "{% url "private:ffs" %}" + api + "/" + path
+            return "{% url "private:ffs" %}" + api + "/" + encodeURIComponent(path)
         }
 
         folders = [

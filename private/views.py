@@ -7,6 +7,7 @@ from django.views.decorators.http import require_http_methods
 from magic.compat import detect_from_filename
 
 from general import default_render, exception_to_response, UserError
+from private.icons import img_file_icon
 from private.models import Setting
 from template_tags import base64e
 
@@ -48,7 +49,7 @@ def api_raw(request: HttpRequest, path: Path):
     if full_path.is_file():
         return FileResponse(open(full_path, "rb"))
     else:
-        return JsonResponse({p.name: str(p.relative_to(fs_root)) for p in full_path.iterdir()})
+        return JsonResponse({p.name: str(p.relative_to(fs_root)) for p in sorted(full_path.iterdir())})
 
 
 @require_http_methods(["GET"])
@@ -66,6 +67,7 @@ def api_files(request: HttpRequest, path: Path):
         template_name = "files"
         title_msg = "Files"
         files = list(full_path.iterdir())
+        files.sort()
         extra_context = {"files": [f.relative_to(fs_root) for f in files if f.is_file()],
                          "folders": [f.relative_to(fs_root) for f in files if not f.is_file()]}
 
@@ -73,6 +75,12 @@ def api_files(request: HttpRequest, path: Path):
         "title": f"{path}: {title_msg}", **extra_context,
         "path": path,
     })
+
+
+@require_http_methods(["GET"])
+@require_path_exists
+def api_icon(request: HttpRequest, path: Path):
+    return FileResponse(open(img_file_icon(path), "rb"))
 
 
 @require_http_methods(["GET"])
@@ -99,7 +107,7 @@ def api_info(request: HttpRequest, path: Path):
 @permission_required("private.ffs")
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
-    valid_apis = ["raw", "files", "info"]
+    valid_apis = ["raw", "files", "info", "icon"]
 
     if api not in valid_apis:
         raise UserError(f"The requested API does not exist: {api}, the only options are {valid_apis}")
@@ -115,5 +123,7 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
             return api_files(request, path)
         case "info":
             return api_info(request, path)
+        case "icon":
+            return api_icon(request, path)
 
     return HttpResponseServerError("Did not configure my stuff correctly")
