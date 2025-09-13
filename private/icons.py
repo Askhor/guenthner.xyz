@@ -18,7 +18,8 @@ def create_icon(path: Path):
     full_path = fs_root / path
     icon_file = get_icon_file(path)
     icon_file.parent.mkdir(parents=True, exist_ok=True)
-    output = subprocess.run(f'convert -resize32x32! "{full_path}" "{icon_file}"',
+    cmd = f'convert -resize32x32! "{full_path}" "{icon_file}"'
+    output = subprocess.run(cmd,
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 
     if not icon_file.exists():
@@ -26,7 +27,8 @@ def create_icon(path: Path):
                f"Image path: {full_path}\n"
                f"Icon path: {icon_file}\n"
                f"Stdout:\n{output.stdout.decode()}\n"
-               f"Stderr:\n{output.stderr.decode()}")
+               f"Stderr:\n{output.stderr.decode()}\n"
+               f"Full command: {cmd}")
 
         log.error(msg)
         raise RuntimeError(msg)
