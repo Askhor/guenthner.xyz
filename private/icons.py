@@ -16,10 +16,10 @@ def create_icon(path: Path):
     icon_file = get_icon_file(path)
     icon_file.parent.mkdir(parents=True, exist_ok=True)
     output = subprocess.run(["convert", "-resize", "32x32!", str(full_path), str(icon_file)],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 
     if not icon_file.exists():
-        raise ValueError(f"Could not create image icon:\n{output.stdout.decode()}\n\n{output.stderr.decode()}")
+        raise ValueError(f"Could not create image icon:\nStdout:\n{output.stdout.decode()}\nStderr:\n{output.stderr.decode()}")
 
 
 def img_file_icon(path: Path) -> Path:
