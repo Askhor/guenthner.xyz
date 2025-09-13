@@ -34,7 +34,7 @@ if not DEBUG:
         "disable_existing_loggers": False,
         "formatters": {
             "default": {
-                "format": "{asctime} [{levelname:>5}] {name:>5}-{module:>10}: {message}",
+                "format": "{asctime} [{levelname:>5}] {name:>5}-{module:<10}: {message}",
                 "style": "{",
                 "datefmt": "%W %a %I:%M",
             }
