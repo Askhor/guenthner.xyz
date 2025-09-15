@@ -1,5 +1,6 @@
 import subprocess
 
+
 def run_cowsay():
     try:
         # Run `fortune` and capture its output

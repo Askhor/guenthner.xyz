@@ -30,10 +30,12 @@ def add_description(desc: str):
 def strip_file_extension(path: str):
     return os.path.splitext(path)[0]
 
+
 @register.filter
 @stringfilter
 def base64e(value: str):
     return base64.urlsafe_b64encode(str(value).encode()).decode()
+
 
 @register.filter
 @stringfilter

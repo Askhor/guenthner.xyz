@@ -1,6 +1,9 @@
 from pathlib import Path
 
+from django.conf import settings
 from django.http import HttpRequest, FileResponse
+from django.views.decorators.cache import cache_control
+from django.views.decorators.http import condition
 
 from general import default_render
 
@@ -23,6 +26,8 @@ def get_error_msg(status_code: int):
             return "I have programmed no extra error message here."
 
 
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda *a, **kw: "A")
 def error_page(request: HttpRequest, status_code: int):
     return default_render(request, f"special/error_page.html", {
         "title": f"Error: {status_code}",
@@ -32,4 +37,5 @@ def error_page(request: HttpRequest, status_code: int):
 
 
 def view_debug_static(prepend: Path):
-    return lambda request, path: FileResponse(open(Path(prepend) / path, "rb"))
+    return condition(etag_func=lambda *a, **kw: "A")(
+        lambda request, path: FileResponse(open(Path(prepend) / path, "rb")))

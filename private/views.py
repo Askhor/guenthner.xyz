@@ -1,9 +1,11 @@
 from pathlib import Path
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpRequest, HttpResponse, FileResponse, JsonResponse, \
     HttpResponseServerError
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.cache import cache_control
+from django.views.decorators.http import require_http_methods, condition
 from magic.compat import detect_from_filename
 
 from general import default_render, exception_to_response, UserError
@@ -14,6 +16,8 @@ from template_tags import base64e
 fs_root = Path(Setting.objects.get(name='fs_root').value)
 
 
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda request: str(request.user))
 @login_required
 @permission_required("private.ffs")
 def view_index(request: HttpRequest):

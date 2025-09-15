@@ -4,8 +4,10 @@ from datetime import datetime, UTC
 from functools import reduce
 from pathlib import Path
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
-from django.views.decorators.cache import never_cache
+from django.views.decorators.cache import never_cache, cache_control
+from django.views.decorators.http import condition
 
 from general import default_render
 from general.cowsay import run_cowsay
@@ -14,6 +16,8 @@ from root.models import ChatMessage
 server_root = Path("/var/www/guenthner.xyz")
 
 
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda *a, **kw: "A")
 def view_index(request: HttpRequest):
     return default_render(request, "root/index.html", {
         "title": "Günthner's Webpage",
@@ -21,12 +25,16 @@ def view_index(request: HttpRequest):
     })
 
 
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda *a, **kw: "A")
 def view_pretty(request: HttpRequest):
     return default_render(request, "root/pretty/pretty.html", {
         "title": "Pretty Stuff I made"
     })
 
 
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda *a, **kw: "A")
 def view_words(request: HttpRequest):
     return default_render(request, "root/pretty/words.html", {
         "title": "Pretty Words I wrote",
@@ -34,6 +42,8 @@ def view_words(request: HttpRequest):
     })
 
 
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda *a, **kw: "A")
 def view_pictures(request: HttpRequest):
     return default_render(request, "root/pretty/pictures.html", {
         "title": "Pretty Pictures I made",
@@ -44,6 +54,8 @@ def view_pictures(request: HttpRequest):
     })
 
 
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda *a, **kw: "A")
 def view_memes(request: HttpRequest):
     return default_render(request, "root/memes.html", {
         "title": "Memes",
@@ -51,12 +63,15 @@ def view_memes(request: HttpRequest):
     })
 
 
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda *a, **kw: "A")
 def view_creations(request: HttpRequest):
     return default_render(request, "root/creations/creations.html", {
         "title": "Creations"
     })
 
 
+@never_cache
 def view_cowsay(request: HttpRequest):
     return default_render(request, "root/creations/cowsay.html", {
         "title": "Cowsay",
@@ -93,24 +108,32 @@ def view_chat(request: HttpRequest):
         "error_msg": error_msg})
 
 
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda *a, **kw: "A")
 def view_math(request: HttpRequest):
     return default_render(request, "root/math/math.html", {
         "title": "The Math-Corner"
     })
 
 
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda *a, **kw: "A")
 def view_paper(request: HttpRequest):
     return default_render(request, "root/math/paper.html", {
         "title": "Paper"
     })
 
 
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda *a, **kw: "A")
 def view_mandelbrot(request: HttpRequest):
     return default_render(request, "root/math/mandelbrot.html", {
         "title": "Mandelbrot"
     })
 
 
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda *a, **kw: "A")
 def view_eratosthenes(request: HttpRequest):
     return default_render(request, "root/math/eratosthenes.html", {
         "title": "Eratosthenes"

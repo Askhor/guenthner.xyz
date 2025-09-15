@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class GlobalPermission(models.Model):
     # no fields needed; optional descriptive field
     name = models.CharField(max_length=128, blank=True)
@@ -10,6 +11,7 @@ class GlobalPermission(models.Model):
         permissions = [
             ("ffs", "FFS")
         ]
+
 
 class Setting(models.Model):
     name = models.CharField(max_length=128, blank=True)
