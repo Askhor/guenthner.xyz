@@ -1,3 +1,4 @@
+import datetime
 from pathlib import Path
 
 from django.conf import settings
@@ -45,8 +46,29 @@ def check_permissions(request: HttpRequest, path: Path):
     pass
 
 
+def get_path_last_mod(request, path: Path):
+    full_path = fs_root / path
+    if not full_path.exists():
+        return None
+    return datetime.datetime.fromtimestamp(full_path.stat().st_mtime)
+
+
+def get_path_etag(request, path: Path):
+    full_path = fs_root / path
+
+    if not full_path.exists():
+        return None
+
+    if full_path.is_file():
+        return f"{full_path.stat().st_mtime} {full_path.stat().st_size}"
+
+    return " ".join((f.name for f in full_path.iterdir()))
+
+
 @require_http_methods(["GET"])
 @require_path_exists
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
 def api_raw(request: HttpRequest, path: Path):
     full_path = fs_root / path
 
@@ -57,6 +79,7 @@ def api_raw(request: HttpRequest, path: Path):
 
 
 @require_http_methods(["GET"])
+@condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
 def api_files(request: HttpRequest, path: Path):
     full_path = fs_root / path
 
@@ -83,6 +106,7 @@ def api_files(request: HttpRequest, path: Path):
 
 @require_http_methods(["GET"])
 @require_path_exists
+@condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
 def api_icon(request: HttpRequest, path: Path):
     try:
         return FileResponse(open(img_file_icon(path), "rb"))
@@ -92,6 +116,7 @@ def api_icon(request: HttpRequest, path: Path):
 
 @require_http_methods(["GET"])
 @require_path_exists
+@condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
 def api_info(request: HttpRequest, path: Path):
     full_path = fs_root / path
 
@@ -112,6 +137,7 @@ def api_info(request: HttpRequest, path: Path):
 
 @login_required
 @permission_required("private.ffs")
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
     valid_apis = ["raw", "files", "info", "icon"]
