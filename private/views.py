@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 from pathlib import Path
 
 from django.conf import settings
@@ -6,7 +7,9 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpRequest, HttpResponse, FileResponse, JsonResponse, \
     HttpResponseServerError
 from django.views.decorators.cache import cache_control
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, condition
+from django.views.decorators.vary import vary_on_headers
 from magic.compat import detect_from_filename
 
 from general import default_render, exception_to_response, UserError
@@ -62,7 +65,7 @@ def get_path_etag(request, path: Path):
     if full_path.is_file():
         return f"{full_path.stat().st_mtime} {full_path.stat().st_size}"
 
-    return " ".join((f.name for f in full_path.iterdir()))
+    return hashlib.sha256(" ".join((f.name for f in full_path.iterdir())))
 
 
 @require_http_methods(["GET"])
@@ -82,7 +85,6 @@ def api_raw(request: HttpRequest, path: Path):
 @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
 def api_files(request: HttpRequest, path: Path):
     full_path = fs_root / path
-
     extra_context = {}
 
     if not full_path.exists():
@@ -135,12 +137,43 @@ def api_info(request: HttpRequest, path: Path):
     })
 
 
+# file_packet:
+# - hash
+# - content (binary)
+# - path
+# - name
+#
+# function get_file_packet(hash) -> file_packet
+# js:
+# - Get from local cache
+# - Send request
+# py:
+# - Get from fs
+# - Wait for request
+
+@require_http_methods(["GET", "POST"])
+@vary_on_headers("X-File-Packet-Hash")
+@csrf_exempt
+@require_path_exists
+@condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
+def api_file_packet(request: HttpRequest, path: Path):
+    return HttpResponse("Ho!")
+
+    match request.method:
+        case "GET":
+            pass
+        case "PUT":
+            pass
+        case _:
+            raise RuntimeError()
+
+
 @login_required
 @permission_required("private.ffs")
 @cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
-    valid_apis = ["raw", "files", "info", "icon"]
+    valid_apis = ["raw", "files", "info", "icon", "file_packet"]
 
     if api not in valid_apis:
         raise UserError(f"The requested API does not exist: {api}, the only options are {valid_apis}")
@@ -158,5 +191,7 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
             return api_info(request, path)
         case "icon":
             return api_icon(request, path)
+        case "file_packet":
+            return api_file_packet(request, path)
 
     return HttpResponseServerError("Did not configure my stuff correctly")
