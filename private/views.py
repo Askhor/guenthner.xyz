@@ -62,10 +62,16 @@ def get_path_etag(request, path: Path):
     if not full_path.exists():
         return None
 
-    if full_path.is_file():
-        return f"{full_path.stat().st_mtime} {full_path.stat().st_size}"
+    hsh = hashlib.sha256()
 
-    return hashlib.sha256(" ".join((f.name for f in full_path.iterdir())))
+    if full_path.is_file():
+        hsh.update(str(full_path.stat().st_mtime).encode())
+        hsh.update(str(full_path.stat().st_size).encode())
+    else:
+        for f in full_path.iterdir():
+            hsh.update(f.name.encode())
+
+    return hsh.hexdigest()
 
 
 @require_http_methods(["GET"])
