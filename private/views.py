@@ -14,10 +14,14 @@ from magic.compat import detect_from_filename
 
 from general import default_render, exception_to_response, UserError
 from private.icons import img_file_icon
-from private.models import Setting
+from private.models import Setting, FilePacket
 from template_tags import base64e
 
-fs_root = Path(Setting.objects.get(name='fs_root').value)
+try:
+    fs_root = Path(Setting.objects.get(name='fs_root').value)
+    file_packet_cache = Path(Setting.objects.get(name='file_packet_cache').value)
+except Setting.DoesNotExist:
+    pass
 
 
 @cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
@@ -157,21 +161,98 @@ def api_info(request: HttpRequest, path: Path):
 # - Get from fs
 # - Wait for request
 
-@require_http_methods(["GET", "POST"])
+def file_for_file_packet(hsh: str):
+    hsh = str(hsh)
+    l = len(hsh)
+    a = hsh[:l // 2]
+    b = hsh[l // 2:]
+    return Path(a) / b
+
+
+def api_file_packet_get_or_head(request: HttpRequest, hsh: str, is_get: bool):
+    content = None
+
+    headers = {
+        "X-File-Packet-Status": FilePacket.OUTSTANDING,
+    }
+
+    try:
+        packet = FilePacket.objects.get(hsh=hsh)
+        headers["X-File-Packet-Status"] = packet.status
+
+        if packet.status == packet.STORED:
+            file = file_packet_cache / packet.file
+            if not file.exists():
+                if is_get:
+                    content = "Internal error while reading file packet"
+                return HttpResponse(status=500,
+                                    content_type="text/plain;charset=utf-8", content=content, headers=headers)
+
+            if is_get:
+                return FileResponse(open(file, "rb"), content_type="application/octet-stream", headers=headers)
+            else:
+                return HttpResponse(status=200, headers=headers)
+        else:
+            raise RuntimeError()
+    except (FilePacket.DoesNotExist, RuntimeError):
+        content = f"File packet for hash {hsh} does not exist"
+        return HttpResponse(status=404, content=content, content_type="text/plain;charset=utf-8", headers=headers)
+
+
+def api_file_packet_post(request: HttpRequest, hsh: str):
+    hsh = str(hsh)
+    packet, _ = FilePacket.objects.get_or_create(hsh=hsh)
+
+    if packet.status == FilePacket.STORED:
+        return HttpResponse(status=400, content=f"File Packet with hash {hsh} was already uploaded",
+                            content_type="text/plain;charset=utf-8", headers={"X-File-Packet-Status": packet.status})
+
+    if packet.status == FilePacket.NEW:
+        packet.file = file_for_file_packet(hsh)
+
+    packet.status = FilePacket.FAILED
+    file = file_packet_cache / packet.file
+    file.parent.mkdir(parents=True, exist_ok=True)
+    file.touch(exist_ok=True)
+
+    CHUNK_SIZE = 64 * 1024
+
+    with open(file, "wb") as fp:
+        while True:
+            data = request.read(CHUNK_SIZE)
+            if len(data) == 0:
+                break
+
+            fp.write(data)
+
+    with open(file, "rb") as fp:
+        check_hash = hashlib.file_digest(fp, "sha256").hexdigest()
+
+    if check_hash != hsh:
+        packet.save()
+        return HttpResponse(status=400,
+                            content=f"Actual file hash:\n{check_hash} ({len(check_hash)})\ndoes not match specified hash:\n{hsh} ({len(str(hsh))})\n",
+                            content_type="text/plain;charset=utf-8")
+
+    packet.status = FilePacket.STORED
+    packet.save()
+    return HttpResponse(status=200)
+
+
+@require_http_methods(["GET", "POST", "HEAD"])
 @vary_on_headers("X-File-Packet-Hash")
 @csrf_exempt
-@require_path_exists
 @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
-def api_file_packet(request: HttpRequest, path: Path):
-    return HttpResponse("Ho!")
-
+def api_file_packet(request: HttpRequest, hsh: str):
     match request.method:
+        case "HEAD":
+            return api_file_packet_get_or_head(request, hsh, False)
         case "GET":
-            pass
-        case "PUT":
-            pass
+            return api_file_packet_get_or_head(request, hsh, True)
+        case "POST":
+            return api_file_packet_post(request, hsh)
         case _:
-            raise RuntimeError()
+            return HttpResponse(status=500)
 
 
 @login_required
@@ -179,7 +260,7 @@ def api_file_packet(request: HttpRequest, path: Path):
 @cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
-    valid_apis = ["raw", "files", "info", "icon", "file_packet"]
+    valid_apis = ["raw", "files", "info", "icon", "file-packet"]
 
     if api not in valid_apis:
         raise UserError(f"The requested API does not exist: {api}, the only options are {valid_apis}")
@@ -197,7 +278,7 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
             return api_info(request, path)
         case "icon":
             return api_icon(request, path)
-        case "file_packet":
+        case "file-packet":
             return api_file_packet(request, path)
 
     return HttpResponseServerError("Did not configure my stuff correctly")

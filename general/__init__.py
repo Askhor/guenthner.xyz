@@ -1,3 +1,6 @@
+import logging
+import time
+
 from django.contrib import sitemaps
 from django.contrib.sitemaps.views import sitemap
 from django.http import HttpRequest, HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
@@ -6,6 +9,8 @@ from django.urls import path
 from django.urls import reverse
 
 from guenthner_xyz import settings
+
+log = logging.getLogger("my")
 
 
 def default_render(request: HttpRequest, template_name: str, context) -> HttpResponse:
@@ -86,3 +91,13 @@ def exception_to_response(exception, status: int):
 
 class UserError(Exception):
     pass
+
+
+class DebugTimer:
+    def __init__(self):
+        self.start = time.time()
+
+    def log(self, message):
+        now = time.time()
+        delta = now - self.start
+        log.info(f"{message:20} at {delta:5.2f} seconds")
