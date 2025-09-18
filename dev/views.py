@@ -14,15 +14,15 @@ def view_index(request: HttpRequest):
     })
 
 
+import subprocess
+
+
 @login_required
 @permission_required("root.admin")
 def view_log(request: HttpRequest, service: str, name: str):
     file = Path("/var/log") / service / f"{name}.log"
-
-    try:
-        content = file.read_bytes()
-    except Exception as e:
-        content = f"Could not read file {file}:\n{e}"
+    output = subprocess.run(f'tail -n 70 "{file}"', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    content = output.stderr.decode("utf-8") + output.stdout.decode("utf-8")
 
     return HttpResponse(content, content_type="text/plain; charset=utf-8")
 

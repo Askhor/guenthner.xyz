@@ -28,51 +28,52 @@ except FileNotFoundError:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ["DEBUG"] == "true" if "DEBUG" in os.environ else False
 
-if not DEBUG:
-    LOGGING = {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "default": {
-                "format": "{asctime} [{levelname:>5}] {name:>5}/{module:<10}: {message}",
-                "style": "{",
-                "datefmt": "%W %a %I:%M",
-            }
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "default": {
+            "format": "{asctime} [{levelname:>5}] {name:>5}/{module:<10}: {message}",
+            "style": "{",
+            "datefmt": "%W %a %I:%M",
+        }
+    },
+    "handlers": {
+        "default": {
+            "class": "logging.StreamHandler",
+        } if DEBUG else {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "/var/log/django/guenthner_xyz.log",
+            "formatter": "default"
         },
-        "handlers": {
-            "file": {
-                "level": "INFO",
-                "class": "logging.FileHandler",
-                "filename": "/var/log/django/guenthner_xyz.log",
-                "formatter": "default"
-            },
+    },
+    "loggers": {
+        "root": {
+            "handlers": ["default"],
+            "level": "DEBUG",
+            "propagate": False,
         },
-        "loggers": {
-            "root": {
-                "handlers": ["file"],
-                "level": "DEBUG",
-                "propagate": False,
-            },
-            "django": {
-                "handlers": ["file"],
-                "level": "DEBUG",
-                "propagate": False,
-            },
-            "my": {
-                "handlers": ["file"],
-                "level": "DEBUG",
-                "propagate": False,
-            }
+        "django": {
+            "handlers": ["default"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "my": {
+            "handlers": ["default"],
+            "level": "DEBUG",
+            "propagate": False,
         }
     }
+}
 
-    # CACHES = {
-    #     "default": {
-    # "BACKEND": "django.core.cache.backends.dummy.DummyCache",
-    # "BACKEND": "django.core.cache.backends.db.DatabaseCache",
-    # "LOCATION": "my_cache_table",
-    # }
-    # }
+# CACHES = {
+#     "default": {
+# "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+# "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+# "LOCATION": "my_cache_table",
+# }
+# }
 
 # Application definition
 
