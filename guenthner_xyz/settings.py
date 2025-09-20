@@ -13,8 +13,6 @@ import json
 import os
 from pathlib import Path
 
-print("Hello, World!")
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -40,7 +38,9 @@ LOGGING = {
     },
     "handlers": {
         "default": {
+            "level": "INFO",
             "class": "logging.StreamHandler",
+            "formatter": "default"
         } if DEBUG else {
             "level": "INFO",
             "class": "logging.FileHandler",
@@ -127,10 +127,10 @@ WSGI_APPLICATION = "guenthner_xyz.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-if not DEBUG:
-    myenv = json.loads(str(Path("env.json").read_text()))
-else:
-    myenv = {}
+myenv = json.loads(str(Path("env.json").read_text()))
+FFS_FS_ROOT = Path(myenv["FFS_FS_ROOT"])
+FFS_FILE_PACKET_CACHE = Path(myenv["FFS_FILE_PACKET_CACHE"])
+FFS_IMAGE_ICONS = Path(myenv["FFS_IMAGE_ICONS"])
 
 if DEBUG:
     DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3",
@@ -139,7 +139,7 @@ else:
     DATABASES = {"default": {"ENGINE": "django.db.backends.mysql",
                              "NAME": "guenthner_xyz",
                              "USER": "guenthner_xyz",
-                             "PASSWORD": myenv["DB Password"],
+                             "PASSWORD": myenv["DB_PASSWORD"],
                              "HOST": "localhost",
                              "PORT": "", }}
 
@@ -156,8 +156,8 @@ AUTH_PASSWORD_VALIDATORS = [{"NAME": "django.contrib.auth.password_validation.Us
 
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
-USE_I18N = True
 USE_TZ = True
+USE_I18N = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -185,7 +185,7 @@ ALLOWED_HOSTS = [
 
 CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in
                         ["guenthner.xyz", "www.guenthner.xyz", "private.guenthner.xyz", "localhost", "127.0.0.1",
-                         "87.106.77.210"]]
+                         "localhost:8000", "87.106.77.210"]]
 
 LOGIN_URL = "/login"
 LOGOUT_URL = "/logout"

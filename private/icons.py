@@ -2,12 +2,12 @@ import logging
 import subprocess
 from pathlib import Path
 
-from private.models import Setting
+from django.conf import settings
 
 log = logging.getLogger("my")
 
-fs_root = Path(Setting.objects.get(name='fs_root').value)
-img_icon_root = Path(Setting.objects.get(name='img_icon_root').value)
+fs_root = settings.FFS_FS_ROOT
+img_icon_root = settings.FFS_IMAGE_ICONS
 
 
 def get_icon_file(path: Path):

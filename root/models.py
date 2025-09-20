@@ -12,7 +12,6 @@ class GlobalPermission(models.Model):
         verbose_name_plural = "Global Permissions"
         permissions = [
             ("admin", "Admin functions"),
-            ("ffs", "FFS")
         ]
 
 

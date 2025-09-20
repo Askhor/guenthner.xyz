@@ -1,11 +1,13 @@
 import datetime
 import hashlib
+import logging
 from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpRequest, HttpResponse, FileResponse, JsonResponse, \
     HttpResponseServerError
+from django.utils import timezone
 from django.views.decorators.cache import cache_control
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, condition
@@ -14,14 +16,13 @@ from magic.compat import detect_from_filename
 
 from general import default_render, exception_to_response, UserError
 from private.icons import img_file_icon
-from private.models import Setting, FilePacket
+from private.models import FilePacket
 from template_tags import base64e
 
-try:
-    fs_root = Path(Setting.objects.get(name='fs_root').value)
-    file_packet_cache = Path(Setting.objects.get(name='file_packet_cache').value)
-except Setting.DoesNotExist:
-    pass
+log = logging.getLogger("my")
+
+fs_root = settings.FFS_FS_ROOT
+file_packet_cache = settings.FFS_FILE_PACKET_CACHE
 
 
 @cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
@@ -163,9 +164,8 @@ def api_info(request: HttpRequest, path: Path):
 
 def file_for_file_packet(hsh: str):
     hsh = str(hsh)
-    l = len(hsh)
-    a = hsh[:l // 2]
-    b = hsh[l // 2:]
+    a = hsh[:2]
+    b = hsh[2:]
     return Path(a) / b
 
 
@@ -173,7 +173,7 @@ def api_file_packet_get_or_head(request: HttpRequest, hsh: str, is_get: bool):
     content = None
 
     headers = {
-        "X-File-Packet-Status": FilePacket.OUTSTANDING,
+        "X-File-Packet-Status": FilePacket.PENDING,
     }
 
     try:
@@ -182,12 +182,13 @@ def api_file_packet_get_or_head(request: HttpRequest, hsh: str, is_get: bool):
 
         if packet.status == packet.STORED:
             file = file_packet_cache / packet.file
-            if not file.exists():
+            if not file.exists() or not file.is_file():
                 if is_get:
                     content = "Internal error while reading file packet"
                 return HttpResponse(status=500,
                                     content_type="text/plain;charset=utf-8", content=content, headers=headers)
 
+            packet.save()
             if is_get:
                 return FileResponse(open(file, "rb"), content_type="application/octet-stream", headers=headers)
             else:
@@ -199,11 +200,30 @@ def api_file_packet_get_or_head(request: HttpRequest, hsh: str, is_get: bool):
         return HttpResponse(status=404, content=content, content_type="text/plain;charset=utf-8", headers=headers)
 
 
+def delete_old_file_packets(max_age=24):
+    to_delete = FilePacket.objects.filter(
+        last_used__lt=timezone.now() - datetime.timedelta(seconds=max_age))
+
+    if len(to_delete) > 0:
+        log.info(f"Deleting {len(to_delete)} old file packets")
+
+    for p in to_delete:
+        if p.status == FilePacket.STORED:
+            file = file_packet_cache / p.file
+            file.unlink()
+        p.delete()
+
+
 def api_file_packet_post(request: HttpRequest, hsh: str):
+    def pre_return(_packet: FilePacket):
+        _packet.save()
+        delete_old_file_packets()
+
     hsh = str(hsh)
     packet, _ = FilePacket.objects.get_or_create(hsh=hsh)
 
     if packet.status == FilePacket.STORED:
+        pre_return(packet)
         return HttpResponse(status=400, content=f"File Packet with hash {hsh} was already uploaded",
                             content_type="text/plain;charset=utf-8", headers={"X-File-Packet-Status": packet.status})
 
@@ -222,21 +242,23 @@ def api_file_packet_post(request: HttpRequest, hsh: str):
             data = request.read(CHUNK_SIZE)
             if len(data) == 0:
                 break
-
             fp.write(data)
 
     with open(file, "rb") as fp:
         check_hash = hashlib.file_digest(fp, "sha256").hexdigest()
 
     if check_hash != hsh:
-        packet.save()
+        pre_return(packet)
+        content = f"Actual file hash:\n{check_hash} ({len(check_hash)})\ndoes not match specified hash:\n{hsh} ({len(str(hsh))})\n"
+        if file.stat().st_size < 100:
+            content += f"What you uploaded: {file.read_text()}\n"
         return HttpResponse(status=400,
-                            content=f"Actual file hash:\n{check_hash} ({len(check_hash)})\ndoes not match specified hash:\n{hsh} ({len(str(hsh))})\n",
-                            content_type="text/plain;charset=utf-8")
+                            content=content,
+                            content_type="text/plain;charset=utf-8", headers={"X-File-Packet-Status": packet.status})
 
     packet.status = FilePacket.STORED
-    packet.save()
-    return HttpResponse(status=200)
+    pre_return(packet)
+    return HttpResponse(status=200, headers={"X-File-Packet-Status": packet.status})
 
 
 @require_http_methods(["GET", "POST", "HEAD"])
