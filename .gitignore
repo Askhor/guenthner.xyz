@@ -10,3 +10,4 @@ static
 db.sqlite3
 __pycache__/
 nginx
+env.json
