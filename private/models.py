@@ -30,3 +30,10 @@ class FilePacket(models.Model):
     def save(self, *args, **kwargs):
         self.last_used = timezone.now()
         super().save(*args, **kwargs)
+
+    @classmethod
+    def status_for(cls, hsh):
+        try:
+            return cls.objects.get(hsh=hsh).status
+        except cls.DoesNotExist:
+            return FilePacket.PENDING

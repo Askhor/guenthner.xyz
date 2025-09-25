@@ -1,6 +1,9 @@
 import datetime
 import hashlib
+import json
 import logging
+import os
+import subprocess
 from pathlib import Path
 
 from django.conf import settings
@@ -9,7 +12,6 @@ from django.http import HttpRequest, HttpResponse, FileResponse, JsonResponse, \
     HttpResponseServerError
 from django.utils import timezone
 from django.views.decorators.cache import cache_control
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, condition
 from django.views.decorators.vary import vary_on_headers
 from magic.compat import detect_from_filename
@@ -148,133 +150,243 @@ def api_info(request: HttpRequest, path: Path):
     })
 
 
-# file_packet:
-# - hash
-# - content (binary)
-# - path
-# - name
-#
-# function get_file_packet(hash) -> file_packet
-# js:
-# - Get from local cache
-# - Send request
-# py:
-# - Get from fs
-# - Wait for request
-
-def file_for_file_packet(hsh: str):
-    hsh = str(hsh)
-    a = hsh[:2]
-    b = hsh[2:]
-    return Path(a) / b
+class api_class:
+    @classmethod
+    def dispatch(cls, request: HttpRequest, *args):
+        match request.method:
+            case "HEAD":
+                return cls.get_or_head(request, *args, False)
+            case "GET":
+                return cls.get_or_head(request, *args, True)
+            case "POST":
+                return cls.post(request, *args)
+            case _:
+                log.error("Well, I forgot something again")
+                return HttpResponse(status=500)
 
 
-def api_file_packet_get_or_head(request: HttpRequest, hsh: str, is_get: bool):
-    content = None
+class FileHasher:
+    def __init__(self, path: Path, buffer_size: int = 2 ** 16):
+        self.path = path
+        self.buffer_size = buffer_size
 
-    headers = {
-        "X-File-Packet-Status": FilePacket.PENDING,
-    }
+    def __enter__(self):
+        self.buffer = bytearray(self.buffer_size)
+        self.memory_view = memoryview(self.buffer)
+        self.fp = open(self.path, "rb", buffering=0)
+        return self
 
-    try:
-        packet = FilePacket.objects.get(hsh=hsh)
-        headers["X-File-Packet-Status"] = packet.status
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.fp.close()
 
-        if packet.status == packet.STORED:
-            file = file_packet_cache / packet.file
-            if not file.exists() or not file.is_file():
-                if is_get:
-                    content = "Internal error while reading file packet"
-                return HttpResponse(status=500,
-                                    content_type="text/plain;charset=utf-8", content=content, headers=headers)
-
-            packet.save()
-            if is_get:
-                return FileResponse(open(file, "rb"), content_type="application/octet-stream", headers=headers)
-            else:
-                return HttpResponse(status=200, headers=headers)
+    def hash(self, start, length, debug=False):
+        if debug:
+            hsh = []
         else:
-            raise RuntimeError()
-    except (FilePacket.DoesNotExist, RuntimeError):
-        content = f"File packet for hash {hsh} does not exist"
-        return HttpResponse(status=404, content=content, content_type="text/plain;charset=utf-8", headers=headers)
+            hsh = hashlib.sha256()
+        self.fp.seek(start, os.SEEK_SET)
+
+        while n := self.fp.readinto(self.memory_view):
+            memory = self.memory_view[:min(length, n)]
+            if debug:
+                hsh.append(memory.tobytes().decode())
+            else:
+                hsh.update(memory)
+            length -= n
+
+        if debug:
+            return hsh
+        else:
+            return hsh.hexdigest()
 
 
-def delete_old_file_packets(max_age=24):
-    to_delete = FilePacket.objects.filter(
-        last_used__lt=timezone.now() - datetime.timedelta(seconds=max_age))
+class api_file_ledger(api_class):
+    @classmethod
+    def get_or_head(cls, request: HttpRequest, path: Path, is_get: bool):
+        full_path = fs_root / path
 
-    if len(to_delete) > 0:
-        log.info(f"Deleting {len(to_delete)} old file packets")
+        if not full_path.is_file():
+            content = None
+            if is_get:
+                content = f"The file at {path} is a folder"
 
-    for p in to_delete:
-        if p.status == FilePacket.STORED:
-            file = file_packet_cache / p.file
-            file.unlink()
-        p.delete()
+            return HttpResponse(status=400, content_type="text/plain; charset=utf-8", content=content)
 
+        if not is_get:
+            return HttpResponse(status=200)
 
-def api_file_packet_post(request: HttpRequest, hsh: str):
-    def pre_return(_packet: FilePacket):
-        _packet.save()
-        delete_old_file_packets()
+        size = full_path.stat().st_size
+        hashes = {}
 
-    hsh = str(hsh)
-    packet, _ = FilePacket.objects.get_or_create(hsh=hsh)
+        with FileHasher(full_path) as hasher:
+            for offset in range(0, size, settings.FFS_NET_BLOCK_SIZE):
+                hsh = hasher.hash(offset, settings.FFS_NET_BLOCK_SIZE)
+                hashes[hsh] = FilePacket.status_for(hsh)
 
-    if packet.status == FilePacket.STORED:
-        pre_return(packet)
-        return HttpResponse(status=400, content=f"File Packet with hash {hsh} was already uploaded",
-                            content_type="text/plain;charset=utf-8", headers={"X-File-Packet-Status": packet.status})
+        return JsonResponse(status=200, data={"hashes": hashes})
 
-    if packet.status == FilePacket.NEW:
-        packet.file = file_for_file_packet(hsh)
+    @classmethod
+    def post(cls, request: HttpRequest, path: Path):
+        full_path = fs_root / path
 
-    packet.status = FilePacket.FAILED
-    file = file_packet_cache / packet.file
-    file.parent.mkdir(parents=True, exist_ok=True)
-    file.touch(exist_ok=True)
+        if full_path.exists():
+            return HttpResponse(status=400, content_type="text/plain; charset=utf-8",
+                                content=f"The file at {path} already exists")
 
-    CHUNK_SIZE = 64 * 1024
+        try:
+            data = json.loads(request.body.decode())
+            hashes = data["hashes"]
+        except json.JSONDecodeError:
+            return HttpResponse(status=400, content_type="text/plain; charset=utf-8",
+                                content="The request was not valid JSON")
+        except KeyError:
+            return HttpResponse(status=400, content_type="text/plain; charset=utf-8",
+                                content="The request did not contain the hashes key")
 
-    with open(file, "wb") as fp:
-        while True:
-            data = request.read(CHUNK_SIZE)
-            if len(data) == 0:
-                break
-            fp.write(data)
+        full_path.parent.mkdir(parents=True, exist_ok=True)
+        if len(hashes) == 0:
+            full_path.touch()
+            return HttpResponse(status=200)
 
-    with open(file, "rb") as fp:
-        check_hash = hashlib.file_digest(fp, "sha256").hexdigest()
+        missing = []
 
-    if check_hash != hsh:
-        pre_return(packet)
-        content = f"Actual file hash:\n{check_hash} ({len(check_hash)})\ndoes not match specified hash:\n{hsh} ({len(str(hsh))})\n"
-        if file.stat().st_size < 100:
-            content += f"What you uploaded: {file.read_text()}\n"
-        return HttpResponse(status=400,
-                            content=content,
-                            content_type="text/plain;charset=utf-8", headers={"X-File-Packet-Status": packet.status})
+        for hsh in hashes:
+            if FilePacket.status_for(hsh) != FilePacket.STORED:
+                missing.append(hsh)
 
-    packet.status = FilePacket.STORED
-    pre_return(packet)
-    return HttpResponse(status=200, headers={"X-File-Packet-Status": packet.status})
+        if len(missing) > 0:
+            return HttpResponse(status=400, content_type="text/plain; charset=utf-8",
+                                content=f"The files for {len(missing)} hashes are missing")
 
+        packets = [FilePacket.objects.get(hsh=hsh) for hsh in hashes]
+        files = [p.file for p in packets]
 
-@require_http_methods(["GET", "POST", "HEAD"])
-@vary_on_headers("X-File-Packet-Hash")
-@csrf_exempt
-@condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
-def api_file_packet(request: HttpRequest, hsh: str):
-    match request.method:
-        case "HEAD":
-            return api_file_packet_get_or_head(request, hsh, False)
-        case "GET":
-            return api_file_packet_get_or_head(request, hsh, True)
-        case "POST":
-            return api_file_packet_post(request, hsh)
-        case _:
+        cmd = f'cat {" ".join((f'"{file_packet_cache / f}"' for f in files))} > "{full_path}"'
+        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        if result.returncode != 0:
+            log.error("Concatenating files on upload failed", result.stderr.decode())
             return HttpResponse(status=500)
+
+        return HttpResponse(status=200)
+
+    @staticmethod
+    @require_http_methods(["GET", "POST", "HEAD"])
+    @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
+    def call(request: HttpRequest, path: Path):
+        cls = api_file_ledger
+        return cls.dispatch(request, path)
+
+
+class api_file_packet(api_class):
+    @classmethod
+    def file_for_file_packet(cls, hsh: str):
+        hsh = str(hsh)
+        a = hsh[:2]
+        b = hsh[2:]
+        return Path(a) / b
+
+    @classmethod
+    def get_or_head(cls, request: HttpRequest, hsh: str, is_get: bool):
+        content = None
+
+        headers = {
+            "X-File-Packet-Status": FilePacket.PENDING,
+        }
+
+        try:
+            packet = FilePacket.objects.get(hsh=hsh)
+            headers["X-File-Packet-Status"] = packet.status
+
+            if packet.status == packet.STORED:
+                file = file_packet_cache / packet.file
+                if not file.exists() or not file.is_file():
+                    if is_get:
+                        content = "Internal error while reading file packet"
+                    return HttpResponse(status=500,
+                                        content_type="text/plain;charset=utf-8", content=content, headers=headers)
+
+                packet.save()
+                if is_get:
+                    return FileResponse(open(file, "rb"), content_type="application/octet-stream", headers=headers)
+                else:
+                    return HttpResponse(status=200, headers=headers)
+            else:
+                raise RuntimeError()
+        except (FilePacket.DoesNotExist, RuntimeError):
+            content = f"File packet for hash {hsh} does not exist"
+            return HttpResponse(status=404, content=content, content_type="text/plain;charset=utf-8", headers=headers)
+
+    @classmethod
+    def delete_old(cls, max_age=48):
+        to_delete = FilePacket.objects.filter(
+            last_used__lt=timezone.now() - datetime.timedelta(hours=max_age))
+
+        if len(to_delete) > 0:
+            log.info(f"Deleting {len(to_delete)} old file packets")
+
+        for p in to_delete:
+            if p.status == FilePacket.STORED:
+                file = file_packet_cache / p.file
+                file.unlink()
+            p.delete()
+
+    @classmethod
+    def post(cls, request: HttpRequest, hsh: str):
+        def pre_return(_packet: FilePacket):
+            _packet.save()
+            cls.delete_old()
+
+        hsh = str(hsh)
+        packet, _ = FilePacket.objects.get_or_create(hsh=hsh)
+
+        if packet.status == FilePacket.STORED:
+            pre_return(packet)
+            return HttpResponse(status=400, content=f"File Packet with hash {hsh} was already uploaded",
+                                content_type="text/plain;charset=utf-8",
+                                headers={"X-File-Packet-Status": packet.status})
+
+        if packet.status == FilePacket.NEW:
+            packet.file = cls.file_for_file_packet(hsh)
+
+        packet.status = FilePacket.FAILED
+        file = file_packet_cache / packet.file
+        file.parent.mkdir(parents=True, exist_ok=True)
+        file.touch(exist_ok=True)
+
+        CHUNK_SIZE = 64 * 1024
+
+        with open(file, "wb") as fp:
+            while True:
+                data = request.read(CHUNK_SIZE)
+                if len(data) == 0:
+                    break
+                fp.write(data)
+
+        with open(file, "rb") as fp:
+            check_hash = hashlib.file_digest(fp, "sha256").hexdigest()
+
+        if check_hash != hsh:
+            pre_return(packet)
+            content = f"Actual file hash:\n{check_hash} ({len(check_hash)})\ndoes not match specified hash:\n{hsh} ({len(str(hsh))})\n"
+            if file.stat().st_size < 100:
+                content += f"What you uploaded: {file.read_text()}\n"
+            return HttpResponse(status=400,
+                                content=content,
+                                content_type="text/plain;charset=utf-8",
+                                headers={"X-File-Packet-Status": packet.status})
+
+        packet.status = FilePacket.STORED
+        pre_return(packet)
+        return HttpResponse(status=200, headers={"X-File-Packet-Status": packet.status})
+
+    @staticmethod
+    @require_http_methods(["GET", "POST", "HEAD"])
+    @vary_on_headers("X-File-Packet-Status")
+    @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
+    def call(request: HttpRequest, hsh: str):
+        cls = api_file_packet
+        return cls.dispatch(request, hsh)
 
 
 @login_required
@@ -282,7 +394,7 @@ def api_file_packet(request: HttpRequest, hsh: str):
 @cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
-    valid_apis = ["raw", "files", "info", "icon", "file-packet"]
+    valid_apis = ["raw", "files", "info", "icon", "file-packet", "file-ledger"]
 
     if api not in valid_apis:
         raise UserError(f"The requested API does not exist: {api}, the only options are {valid_apis}")
@@ -301,6 +413,8 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
         case "icon":
             return api_icon(request, path)
         case "file-packet":
-            return api_file_packet(request, path)
+            return api_file_packet.call(request, path)
+        case "file-ledger":
+            return api_file_ledger.call(request, path)
 
     return HttpResponseServerError("Did not configure my stuff correctly")
