@@ -3,7 +3,7 @@ import hashlib
 import json
 import logging
 import os
-import subprocess
+import shutil
 from pathlib import Path
 
 from django.conf import settings
@@ -277,12 +277,10 @@ class api_file_ledger(api_class):
         packets = [FilePacket.objects.get(hsh=hsh) for hsh in hashes]
         files = [p.file for p in packets]
 
-        cmd = f'cat {" ".join((f'"{file_packet_cache / f}"' for f in files))} > "{full_path}"'
-        result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        if result.returncode != 0:
-            log.error("Concatenating files after upload failed", result.stderr.decode())
-            return HttpResponse(status=500)
+        with open(full_path, "wb") as dst:
+            for f in files:
+                with open(f, "rb") as src:
+                    shutil.copyfileobj(src, dst)
 
         return cls.post_status_response(packet_info, True)
 
