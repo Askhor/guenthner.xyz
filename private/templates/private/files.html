@@ -83,7 +83,7 @@
                             Uploading file "<span x-text="msg.upload.name"></span>" to
                             "<span x-text="msg.upload.path"></span>". <span x-text="msg.upload.percentage"></span>
                             completed:
-                            <div>
+                            <div style="display: flex; flex-wrap: wrap">
                                 <template x-for="packet in msg.upload.packets">
                                     <span class="dot" :style="'background-color:'+packet.color"></span>
                                 </template>
