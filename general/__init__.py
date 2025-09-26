@@ -1,6 +1,8 @@
 import logging
 import time
+from pathlib import Path
 
+import magic
 from django.contrib import sitemaps
 from django.contrib.sitemaps.views import sitemap
 from django.http import HttpRequest, HttpResponse, HttpResponsePermanentRedirect, HttpResponseRedirect
@@ -101,3 +103,38 @@ class DebugTimer:
         now = time.time()
         delta = now - self.start
         log.info(f"{message:20} at {delta:5.2f} seconds")
+
+
+def log_call(func):
+    def func_wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        log.info(f"{func.__name__} with {args} and {kwargs} returned {result}")
+        return result
+
+    return func_wrapper
+
+
+def overwrite_result(mapping):
+    def wrapper(func):
+        def func_wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+            if result in mapping:
+                return mapping[result]
+            return result
+
+        return func_wrapper
+
+    return wrapper
+
+
+@overwrite_result({"audio/x-hx-aac-adts": "audio/aac"})
+def get_mime_type(p: Path):
+    if p.is_dir():
+        return "inode/directory"
+
+    try:
+        return magic.from_file(p, mime=True)
+    except Exception as e:
+        # Sometimes the function just fails
+        log.error(f"Could not determine mime type of {p}; reason: {e}")
+        return "text/plain;charset=utf-8"

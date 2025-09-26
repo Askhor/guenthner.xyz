@@ -9,120 +9,102 @@
         function api_url(api, path) {
             return "{% url "private:ffs" %}" + api + "/" + encodeURIComponent(path)
         }
-
-        folders = [
-            {% for f in folders %}
-                "{{ f|escapejs }}",
-            {% endfor %}];
-        files = [
-            {% for f in files %}
-                "{{ f|escapejs }}",
-            {% endfor %}];
     </script>
+    {% load_alpine %}
+    {% load_js "files/load_files" extra_args="defer" %}
+    {% load_js "files/add_metadata" extra_args="defer" %}
+    {% load_js "files/upload" extra_args="defer" %}
 {% endblock %}
 
 {% block content %}
-    <!--<div id="path-view">
-
-    </div>
-    <input id="auto-reload" type="checkbox" checked>
-    <label for="auto-reload">Auto Reload</label>
-    <table id="file-view-container">
-        <tr>
-            <td style="display: flex">
-                <table id="file-view">
-
-                </table>
-            </td>
-            <td>
-                <div id="file-drop-area">
-                    Drop files here
-                </div>
-            </td>
-        </tr>
-    </table>
-    <div>
-        <a id="download-link">Download directory (zip)</a>
-        <div id="error-msg"></div>
-    </div>-->
-
     <h1 style="margin-bottom: 0;">
         Hello, {{ request.user }}
     </h1>
-    <span><button onclick="select_tab('file-view-container')">View</button>
-          <button onclick="select_tab('upload-container')">Upload</button></span>
+    <span><button class="tab"
+                  :class="$store.tab=='view' && 'selected'"
+                  x-data
+                  @click="$store.tab='view'"
+                  @keyup.v.window="$store.tab='view'">View</button>
+          <button class="tab"
+                  :class="$store.tab=='upload' && 'selected'"
+                  x-data
+                  @click="$store.tab='upload'"
+                  @keyup.u.window="$store.tab='upload'">Upload</button></span>
 
-    <table id="file-view-container" class="tab-container">
-        <tr>
-            <td style="display: flex">
-                <table id="file-view">
-                    <thead>
-                    <tr>
-                        <th></th>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>Size</th>
-                        <th></th>
-                    </tr>
-                    <tr class="thin-row">
-                        <th class="thin-row" colspan="5" style="text-align: left">Buttons go here</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for f in folders %}
-                        <tr>
-                            <td><span class="icon">📁</span></td>
-                            <td><a href="{% url "private:api" "files" f %}">{{ f.name }}</a></td>
-                            <td>Folder</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    {% endfor %}
-                    {% for f in files %}
-                        <tr>
-                            <td id="icon-{{ f.name|base64e }}"></td>
-                            <td><a href="{% url "private:api" "files" f %}">{{ f.name }}</a></td>
-                            <td id="type-{{ f.name|base64e }}"></td>
-                            <td id="size-{{ f.name|base64e }}"></td>
-                            <td></td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </td>
-            <!--<td>
-                <div id="file-drop-area">
-                    Drop files here
+    <div id="file_view_container" class="tab-container" x-data x-cloak x-show="$store.tab=='view'">
+        <table id="file_view" cellspacing="0">
+            <thead>
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Size</th>
+                <th>Actions</th>
+            </tr>
+            <tr class="thin-row">
+                <th class="thin-row" colspan="5" style="text-align: left">Buttons go here</th>
+            </tr>
+            </thead>
+            <tbody class="alternate-container">
+            <template x-data x-for="file in $store.files">
+                <tr class="alternate">
+                    <td x-html="file.icon"></td>
+                    <td><a :href="api_url('files', file.path)" x-text="file.name"></a></td>
+                    <td x-text="file.type"></td>
+                    <td x-text="file.size" style="text-align: right"></td>
+                    <td></td>
+                </tr>
+            </template>
+            </tbody>
+        </table>
+    </div>
+    <div id="upload_container" class="tab-container" style="margin-top: 20px" x-data x-cloak
+         x-show="$store.tab=='upload'">
+        <form id="file_input_container"
+              @submit.prevent="upload_files_from($refs.files)"
+              @keyup.alt.u.window.prevent="upload_files_from($refs.files)">
+            <strong style="display: block">Direct File Upload:</strong>
+            <label for="file-input">
+                File to upload:
+            </label>
+            <input type="file" multiple x-ref="files"
+                   @keyup.shift.u.window.prevent="$el.click()">
+            <button style="display: block">Upload file</button>
+        </form>
+        <div id="status_messages" class="alternate-container">
+            <template x-for="msg in $store.status">
+                <div>
+                    {# Here are all the different possible status messages #}
+                    <template x-if="msg.type == 'plain'">
+                        <div x-text="msg.content" class="status-message"></div>
+                    </template>
+                    <template x-if="msg.type != 'plain'">
+                        <div class="status-message">
+                            Uploading file "<span x-text="msg.upload.name"></span>" to
+                            "<span x-text="msg.upload.path"></span>". <span x-text="msg.upload.percentage"></span>
+                            completed:
+                            <div>
+                                <template x-for="packet in msg.upload.packets">
+                                    <span class="dot" :style="'background-color:'+packet.color"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
                 </div>
-            </td>-->
-        </tr>
-    </table>
-    <div id="upload-container" class="tab-container" style="display:none; margin-top: 20px">
-        <label for="file-input">
-            File input:
-        </label>
-        <input id="file-input" type="file">
-        <label for="upload-output">
-            Drag files here to upload/Upload Output:
-        </label>
-        <textarea id="upload-output"
-                  style="display:block; width: 100%; height: 50vh" contenteditable="false">To upload files, drag them here</textarea>
+            </template>
+        </div>
     </div>
 
-    {% load_js "files/add_metadata" extra_args="async" %}
-
     <script>
-        function select_tab(id) {
-            document.querySelectorAll(".tab-container").forEach(el => {
-                el.style.display = "none";
-            })
+        const current_path = "{{ path }}";
+        const net_block_size = {{ net_block_size }};
+        const csrf_token = "{{ csrf_token }}";
 
-            document.getElementById(id).style.display = "block";
-        }
+        document.addEventListener("alpine:init", () => {
+            Alpine.store("tab", "view")
+            Alpine.store("files", [])
+            Alpine.store("status", [])
+        })
     </script>
-    <style>
-        #upload-container > * {
-            display: block;
-        }
-    </style>
+
 {% endblock %}

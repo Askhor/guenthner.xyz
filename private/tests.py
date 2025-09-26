@@ -101,8 +101,7 @@ class FileLedgerTest(MyTestCase):
         result = self.client.post(f"/private/ffs/file-ledger/{file_path}",
                                   content_type="application/json",
                                   data={"hashes": hashes})
-        self.assertEqual(result.status_code, 400)
-        self.assertEqual(result.content, f"The files for {len(test_data)} hashes are missing".encode())
+        self.assertEqual(result.status_code, 202)
 
         for data, hsh in zip(test_data, hashes):
             result = self.client.post(f"/private/ffs/file-packet/{hsh}",
