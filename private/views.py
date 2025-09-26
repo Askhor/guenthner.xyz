@@ -279,7 +279,7 @@ class api_file_ledger(api_class):
 
         with open(full_path, "wb") as dst:
             for f in files:
-                with open(f, "rb") as src:
+                with open(file_packet_cache / f, "rb") as src:
                     shutil.copyfileobj(src, dst)
 
         return cls.post_status_response(packet_info, True)
