@@ -20,7 +20,7 @@
     <h1 style="margin-bottom: 0;">
         Hello, {{ request.user }}
     </h1>
-    <span><button class="tab"
+    <span><strong>Menu:</strong> <button class="tab"
                   :class="$store.tab=='view' && 'selected'"
                   x-data
                   @click="$store.tab='view'"
@@ -41,9 +41,9 @@
                 <th>Size</th>
                 <th>Actions</th>
             </tr>
-            <tr class="thin-row">
+            <!--<tr class="thin-row">
                 <th class="thin-row" colspan="5" style="text-align: left">Buttons go here</th>
-            </tr>
+            </tr>-->
             </thead>
             <tbody class="alternate-container">
             <template x-data x-for="file in $store.files">
