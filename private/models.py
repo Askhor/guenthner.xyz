@@ -1,7 +1,13 @@
+import logging
 import re
+from pathlib import Path
 
 from django.db import models
 from django.utils import timezone
+
+from general import UserError
+
+log = logging.getLogger("my")
 
 
 class GlobalPermission(models.Model):
@@ -54,10 +60,31 @@ class PermissionsRule(models.Model):
 
     def matches(self, path: Path) -> bool:
         regex = re.compile(self.get_rule())
-        return regex.match(str(path)) is not None
+        return regex.match(str(path))
+
+    @staticmethod
+    def normalise(path: Path):
+        path = str(path)
+        if "../" in path:
+            raise UserError("Please don't have \"..\" in your paths")
+        path = path.replace("./", "")
+        return path
 
     def user_allowed(self, path: Path, username: str):
-        if not self.matches(path):
+        path = self.normalise(path)
+
+        if (match := self.matches(path)) is None:
             return True
 
-        return False
+        user_re = self.users
+
+        if self.is_template:
+            try:
+                user_re = user_re.replace("$USER", match.groupdict()["user"])
+            except KeyError:
+                pass
+
+        return re.match(user_re, username) is not None
+
+    def __str__(self):
+        return f"{self.rule}: {self.users}"

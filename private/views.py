@@ -18,7 +18,7 @@ from django.views.decorators.vary import vary_on_headers
 from general import default_render, exception_to_response, UserError, get_mime_type
 from guenthner_xyz import settings
 from private.icons import img_file_icon
-from private.models import FilePacket
+from private.models import FilePacket, PermissionsRule
 from template_tags import base64e
 
 log = logging.getLogger("my")
@@ -55,7 +55,13 @@ def check_path(request: HttpRequest, path: Path):
 
 
 def check_permissions(request: HttpRequest, path: Path):
-    pass
+    for rule in PermissionsRule.objects.all():
+        if not rule.user_allowed(path, str(request.user)):
+            return HttpResponse(f"You are not allowed to view this location.\n"
+                                f"You have been blocked by the rule:\n"
+                                f"{rule}", status=403, content_type="text/plain; charset=utf-8")
+
+    return None
 
 
 def get_path_last_mod(request, path: Path):
@@ -422,9 +428,9 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
 
     path = Path(path)
     check_path(request, path)
-    if not check_permissions(request, path):
-        return HttpResponse("You are not allowed to view this location", status=403,
-                            content_type="text/plain;charset=utf-8")
+
+    if (r := check_permissions(request, path)) is not None:
+        return r
 
     match api:
         case "raw":
