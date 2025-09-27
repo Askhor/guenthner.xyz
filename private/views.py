@@ -89,6 +89,7 @@ def get_path_etag(request, path: Path):
     return hsh.hexdigest()
 
 
+@never_cache
 @require_http_methods(["GET"])
 @require_path_exists
 @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
@@ -163,6 +164,48 @@ def api_info(request: HttpRequest, path: Path):
         "mime": mime,
         "ascii key": base64e(path.name)
     })
+
+
+@require_http_methods(["POST"])
+@require_path_exists
+def api_move(request: HttpRequest, src: Path):
+    dst = request.body.decode('utf-8')
+
+    if (r := check_permissions(request, dst)) is not None:
+        return r
+
+    full_src = fs_root / src
+    full_dst = fs_root / dst
+
+    if full_dst.exists():
+        return HttpResponse(f"The file at {dst} already exists", status=400)
+
+    shutil.move(full_src, full_dst)
+
+    return HttpResponse(status=200)
+
+
+@require_http_methods(["POST"])
+def api_new(request: HttpRequest, path: Path):
+    full_path = fs_root / path
+
+    if full_path.exists():
+        return HttpResponse(f"The file at {path} already exists", status=400)
+    else:
+        full_path.parent.mkdir(parents=True, exist_ok=True)
+        full_path.touch()
+        return HttpResponse(status=201)
+
+
+@require_http_methods(["POST"])
+def api_mkdir(request: HttpRequest, path: Path):
+    full_path = fs_root / path
+
+    if full_path.exists():
+        return HttpResponse(f"The file at {path} already exists", status=400)
+    else:
+        full_path.mkdir(parents=True)
+        return HttpResponse(status=201)
 
 
 class api_class:
@@ -422,7 +465,7 @@ class api_file_packet(api_class):
 @cache_control(max_age=60 * 60)
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
-    valid_apis = ["raw", "files", "info", "icon", "file-packet", "file-ledger"]
+    valid_apis = ["raw", "files", "info", "icon", "file-packet", "file-ledger", "move", "new", "mkdir"]
 
     if api not in valid_apis:
         raise UserError(f"The requested API does not exist: {api}, the only options are {valid_apis}")
@@ -446,5 +489,11 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
             return api_file_packet.call(request, path)
         case "file-ledger":
             return api_file_ledger.call(request, path)
+        case "move":
+            return api_move(request, path)
+        case "new":
+            return api_new(request, path)
+        case "mkdir":
+            return api_mkdir(request, path)
 
     return HttpResponseServerError("Did not configure my stuff correctly")

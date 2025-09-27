@@ -14,18 +14,20 @@
     {% load_js "files/load_files" extra_args="defer" %}
     {% load_js "files/add_metadata" extra_args="defer" %}
     {% load_js "files/upload" extra_args="defer" %}
+    {% load_js "files/actions" extra_args="defer" %}
 {% endblock %}
 
 {% block content %}
     <h1 style="margin-bottom: 0;">
         Hello, {{ request.user }}
     </h1>
-    <span><strong>Menu:</strong> <button class="tab"
-                                         :class="$store.tab=='view' && 'selected'"
-                                         x-data
-                                         @click="$store.tab='view'"
-                                         @keyup.v.window="$store.tab='view'">View</button>
-          <button class="tab"
+    <span><strong>Menu:</strong>
+        <button class="custom-button"
+                :class="$store.tab=='view' && 'selected'"
+                x-data
+                @click="$store.tab='view'"
+                @keyup.v.window="$store.tab='view'">View</button>
+          <button class="custom-button"
                   :class="$store.tab=='upload' && 'selected'"
                   x-data
                   @click="$store.tab='upload'"
@@ -45,9 +47,21 @@
                 <th>Size</th>
                 <th>Actions</th>
             </tr>
-            <!--<tr class="thin-row">
-                <th class="thin-row" colspan="5" style="text-align: left">Buttons go here</th>
-            </tr>-->
+            <tr class="thin-row">
+                <th class="thin-row" colspan="6" style="text-align: left">
+                    <button class="custom-button" @click="new_file()">New File
+                    </button>
+                    <button class="custom-button" @click="new_dir()">
+                        New Folder
+                    </button>
+                    <button class="custom-button" x-text="'Move '+count_selected()+' Files'"
+                            @click="move_files()">
+                    </button>
+                    <button class="custom-button" x-text="'Delete '+count_selected()+' Files'"
+                            @click="delete_files()">
+                    </button>
+                </th>
+            </tr>
             </thead>
             <tbody class="alternate-container">
             <template x-data x-for="file in $store.files">
@@ -60,7 +74,9 @@
                                                                         x-text="file.name"></a></td>
                     <td @click.self="file.selected = !file.selected" x-text="file.type"></td>
                     <td @click.self="file.selected = !file.selected" x-text="file.size" style="text-align: right"></td>
-                    <td @click.self="file.selected = !file.selected"></td>
+                    <td @click.self="file.selected = !file.selected">
+                        <button @click="rename_file(file)">Rename</button>
+                    </td>
                 </tr>
             </template>
             </tbody>
@@ -114,6 +130,10 @@
             Alpine.store("files", [])
             Alpine.store("status", [])
         })
+
+        function count_selected() {
+            return Alpine.store("files").filter(f => f.selected).length;
+        }
     </script>
 
 {% endblock %}
