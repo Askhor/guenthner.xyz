@@ -21,10 +21,10 @@
         Hello, {{ request.user }}
     </h1>
     <span><strong>Menu:</strong> <button class="tab"
-                  :class="$store.tab=='view' && 'selected'"
-                  x-data
-                  @click="$store.tab='view'"
-                  @keyup.v.window="$store.tab='view'">View</button>
+                                         :class="$store.tab=='view' && 'selected'"
+                                         x-data
+                                         @click="$store.tab='view'"
+                                         @keyup.v.window="$store.tab='view'">View</button>
           <button class="tab"
                   :class="$store.tab=='upload' && 'selected'"
                   x-data
@@ -35,6 +35,10 @@
         <table id="file_view" cellspacing="0">
             <thead>
             <tr>
+                <th><input
+                        type="checkbox"
+                        x-effect="$el.checked = $store.files.every(f=>f.selected)"
+                        @change="$store.files.forEach(f=>f.selected=$el.checked)"></th>
                 <th></th>
                 <th>Name</th>
                 <th>Type</th>
@@ -47,12 +51,16 @@
             </thead>
             <tbody class="alternate-container">
             <template x-data x-for="file in $store.files">
-                <tr class="alternate">
-                    <td x-html="file.icon"></td>
-                    <td><a :href="api_url('files', file.path)" x-text="file.name"></a></td>
-                    <td x-text="file.type"></td>
-                    <td x-text="file.size" style="text-align: right"></td>
-                    <td></td>
+                <tr class="alternate" :class="file.selected && 'selected'" @click.self="file.selected = !file.selected">
+                    <td @click.self="file.selected = !file.selected">
+                        <input type="checkbox" x-model="file.selected">
+                    </td>
+                    <td @click.self="file.selected = !file.selected" x-html="file.icon"></td>
+                    <td @click.self="file.selected = !file.selected"><a :href="api_url('files', file.path)"
+                                                                        x-text="file.name"></a></td>
+                    <td @click.self="file.selected = !file.selected" x-text="file.type"></td>
+                    <td @click.self="file.selected = !file.selected" x-text="file.size" style="text-align: right"></td>
+                    <td @click.self="file.selected = !file.selected"></td>
                 </tr>
             </template>
             </tbody>
