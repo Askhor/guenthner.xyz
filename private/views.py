@@ -422,7 +422,9 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
 
     path = Path(path)
     check_path(request, path)
-    check_permissions(request, path)
+    if not check_permissions(request, path):
+        return HttpResponse("You are not allowed to view this location", status=403,
+                            content_type="text/plain;charset=utf-8")
 
     match api:
         case "raw":
