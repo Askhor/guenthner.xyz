@@ -81,8 +81,9 @@
                     <template x-if="msg.type != 'plain'">
                         <div class="status-message">
                             Uploading file "<span x-text="msg.upload.name"></span>" to
-                            "<span x-text="msg.upload.path"></span>". <span x-text="msg.upload.percentage"></span>
-                            completed:
+                            "<span x-text="msg.upload.path"></span>".
+                            <span x-text="msg.upload.percentage"></span> completed.
+                            <span x-text="msg.upload.finalisation_msg"></span>
                             <div style="display: flex; flex-wrap: wrap">
                                 <template x-for="packet in msg.upload.packets">
                                     <span class="dot" :style="'background-color:'+packet.color"></span>

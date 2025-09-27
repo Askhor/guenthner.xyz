@@ -277,10 +277,14 @@ class api_file_ledger(api_class):
         packets = [FilePacket.objects.get(hsh=hsh) for hsh in hashes]
         files = [p.file for p in packets]
 
-        with open(full_path, "wb") as dst:
-            for f in files:
-                with open(file_packet_cache / f, "rb") as src:
-                    shutil.copyfileobj(src, dst)
+        try:
+            with open(full_path, "wb") as dst:
+                for f in files:
+                    with open(file_packet_cache / f, "rb") as src:
+                        shutil.copyfileobj(src, dst)
+        except Exception as e:
+            full_path.unlink(missing_ok=True)
+            raise e
 
         return cls.post_status_response(packet_info, True)
 
