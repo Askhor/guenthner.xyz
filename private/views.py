@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpRequest, HttpResponse, FileResponse, JsonResponse, \
     HttpResponseServerError
 from django.utils import timezone
-from django.views.decorators.cache import cache_control
+from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.http import require_http_methods, condition, require_safe
 from django.views.decorators.vary import vary_on_headers
 
@@ -91,7 +91,6 @@ def get_path_etag(request, path: Path):
 
 @require_http_methods(["GET"])
 @require_path_exists
-@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
 @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
 def api_raw(request: HttpRequest, path: Path):
     full_path = fs_root / path
@@ -145,6 +144,7 @@ def api_icon(request: HttpRequest, path: Path):
         return HttpResponse(status=500)
 
 
+@never_cache
 @require_safe
 @require_path_exists
 @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
@@ -295,6 +295,7 @@ class api_file_ledger(api_class):
         return cls.post_status_response(packet_info, True)
 
     @staticmethod
+    @never_cache
     @require_http_methods(["GET", "POST", "HEAD"])
     @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
     def call(request: HttpRequest, path: Path):
@@ -418,7 +419,7 @@ class api_file_packet(api_class):
 
 @login_required
 @permission_required("private.ffs")
-@cache_control(max_age=4)
+@cache_control(max_age=60 * 60)
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
     valid_apis = ["raw", "files", "info", "icon", "file-packet", "file-ledger"]
