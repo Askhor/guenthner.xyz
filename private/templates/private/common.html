@@ -1,0 +1,11 @@
+<script>
+    function api_url(api, path, query = null) {
+        let url = "{% url "private:ffs" %}" + api + "/" + encodeURIComponent(path);
+
+        if (query !== null) {
+            url += "?" + query;
+        }
+
+        return url;
+    }
+</script>

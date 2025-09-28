@@ -4,12 +4,10 @@
 {% block head %}
     {% load_css "navigation" %}
     {% load_css "files/notepad" %}
+    {% include "private/common.html" %}
 
     <title x-data x-text="name+' ('+$store.status+')'"></title>
     <script>
-        function api_url(api, path) {
-            return "{% url "private:ffs" %}" + api + "/" + encodeURIComponent(path)
-        }
 
         const name = "{{ name }}";
         const parent = "{{ parent }}";

@@ -3,6 +3,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -20,12 +21,13 @@ from general import default_render, exception_to_response, UserError, get_mime_t
 from guenthner_xyz import settings
 from private.icons import img_file_icon
 from private.models import FilePacket, PermissionsRule
-from template_tags import base64e
 
 log = logging.getLogger("my")
 
 fs_root = settings.FFS_FS_ROOT
 file_packet_cache = settings.FFS_FILE_PACKET_CACHE
+
+img_mime = re.compile("image/.+")
 
 
 @cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
@@ -90,6 +92,14 @@ def get_path_etag(request, path: Path):
     return hsh.hexdigest()
 
 
+def image_view(request: HttpRequest, path: Path):
+    return default_render(request, "private/image_view.html", {
+        "path": path,
+        "name": path.name,
+        "parent": path.parent
+    })
+
+
 @require_http_methods(["GET"])
 @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
 def api_files(request: HttpRequest, path: Path):
@@ -100,8 +110,12 @@ def api_files(request: HttpRequest, path: Path):
         template_name = "file_404"
         title_msg = "does not exist"
     elif full_path.is_file():
-        if get_mime_type(full_path) == "text/plain":
+        mime_type = get_mime_type(full_path)
+        if mime_type == "text/plain":
             return HttpResponseRedirect(reverse("private:api", kwargs={"api": "notepad", "path": path}))
+        if img_mime.fullmatch(mime_type):
+            return image_view(request, path)
+
         return api_raw.call(request, path)
     else:
         template_name = "files"
@@ -126,6 +140,23 @@ def api_icon(request: HttpRequest, path: Path):
         return HttpResponse(status=500)
 
 
+def populate_info_dict(info, path: Path, level):
+    mime = get_mime_type(path)
+
+    info[str(path.relative_to(fs_root))] = {
+        "path": str(path.relative_to(fs_root)),
+        "name": path.name,
+        "size": path.stat().st_size,
+        "mime": mime
+    }
+
+    if level > 0 and path.is_dir():
+        for file in path.iterdir():
+            populate_info_dict(info, file, level - 1)
+
+    return info
+
+
 @cache_control(no_cache=True)
 @require_safe
 @require_path_exists
@@ -134,17 +165,8 @@ def api_info(request: HttpRequest, path: Path):
     if request.method == "HEAD":
         return HttpResponse(status=200)
 
-    full_path = fs_root / path
-
-    mime = get_mime_type(full_path)
-
-    return JsonResponse({
-        "path": str(path),
-        "name": path.name,
-        "size": full_path.stat().st_size,
-        "mime": mime,
-        "ascii key": base64e(path.name)
-    })
+    level = int(request.GET.get("level", 0))
+    return JsonResponse(populate_info_dict({}, fs_root / path, level))
 
 
 @require_http_methods(["POST"])

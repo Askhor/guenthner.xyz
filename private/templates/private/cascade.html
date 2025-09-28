@@ -4,15 +4,12 @@
 {% block head %}
     {% load_css "navigation" %}
     {% load_css "files/cascade" %}
+    {% include "private/common.html" %}
 
     <script>
         const current_path = "{{ path }}";
         const csrf_token = "{{ csrf_token }}";
         const images_per_page = 30;
-
-        function api_url(api, path) {
-            return "{% url "private:ffs" %}" + api + "/" + encodeURIComponent(path)
-        }
 
         window.addEventListener("alpine:init", () => {
             Alpine.store("files", Alpine.reactive([]));

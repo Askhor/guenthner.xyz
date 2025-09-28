@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load utils %}
+
+{% block head %}
+    {% load_css "navigation" %}
+    {% include "private/common.html" %}
+
+    <title x-data x-text="get_name()">{{ name }}</title>
+
+    <script>
+        const current_path = "{{ parent }}";
+        const name = "{{ name }}";
+        const csrf_token = "{{ csrf_token }}";
+
+        function get_images() {
+            return Alpine.store("files")
+                .filter(f => f.type !== '' && image_mime_re.test(f.type));
+        }
+
+        function get_name() {
+            const files = get_images();
+            const index = Alpine.store("index");
+            if (index >= files.length) return name;
+            else return files[Alpine.store("index")].name;
+        }
+
+        window.addEventListener("alpine:init", () => {
+            Alpine.store("files", Alpine.reactive([]));
+            Alpine.store("index", 0);
+        });
+    </script>
+    <style>
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button {
+            margin: 5px;
+        }
+    </style>
+    {% load_alpine %}
+    {% load_js "files/load_files" extra_args="defer" %}
+    {% load_js "files/add_metadata" extra_args="defer" %}
+    {% load_js "files/actions" extra_args="defer" %}
+    {% load_js "files/image_view" extra_args="defer" %}
+{% endblock %}
+
+{% block content %}
+    <div x-data class="center" style="margin: 0 10px">
+        <button @click="change(-1)"
+                @keyup.left.window="change(-1)"
+                x-show="$store.index > 0">
+            Previous
+        </button>
+        <span x-text="$store.index + 1"></span> /
+        <span x-text="get_images().length"></span>
+        <button @click="change(1)"
+                @keyup.right.window="change(1)"
+                x-show="$store.index+1 < get_images().length">
+            Next
+        </button>
+    </div>
+    <div x-data class="center" style="margin: 0 10px">
+        <button x-text="'Delete '+get_name()"
+                @click="delete_current()"
+                @keyup.delete.window.prevent="delete_current()">Delete
+        </button>
+    </div>
+    <div class="center">
+        <img alt="" src=""
+             x-data :alt="name" :src="api_url('raw', current_path + '/' + get_name())"
+             style="width: 90vw">
+    </div>
+{% endblock %}

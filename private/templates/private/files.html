@@ -5,11 +5,7 @@
     {% load_css "navigation" %}
     {% load_css "files/file_viewer" %}
 
-    <script>
-        function api_url(api, path) {
-            return "{% url "private:ffs" %}" + api + "/" + encodeURIComponent(path)
-        }
-    </script>
+    {% include "private/common.html" %}
     {% load_alpine %}
     {% load_js "files/load_files" extra_args="defer" %}
     {% load_js "files/add_metadata" extra_args="defer" %}
