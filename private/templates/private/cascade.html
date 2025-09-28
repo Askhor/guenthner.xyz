@@ -31,12 +31,16 @@
                 .slice(index, index + images_per_page);
         }
 
+        function page_count() {
+            return Math.ceil(get_images().length / images_per_page)
+        }
+
         function change_page(offset) {
-            const page_count = Math.ceil(get_images().length / images_per_page);
+            const count = page_count();
             let new_page = Alpine.store("page") + offset;
             if (new_page < 1) new_page = 1;
-            else if (new_page > page_count) new_page = page_count;
-            
+            else if (new_page > count) new_page = count;
+
             Alpine.store("page", new_page);
         }
     </script>
@@ -48,7 +52,7 @@
 {% block content_container %}
     <header x-data>
         <a :href="api_url('files', current_path)">Back to overview</a>
-        Page: <span x-text="$store.page"></span>
+        Page: <span x-text="$store.page"></span>/<span x-text="page_count()"></span>
         <button @click="change_page(-1)"
                 @keyup.left.window.prevent="change_page(-1)">Previous
         </button>
