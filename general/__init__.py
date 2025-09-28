@@ -127,7 +127,9 @@ def overwrite_result(mapping):
     return wrapper
 
 
-@overwrite_result({"audio/x-hx-aac-adts": "audio/aac"})
+@overwrite_result({"audio/x-hx-aac-adts": "audio/aac",
+                   "inode/x-empty": "text/plain",
+                   "text/html": "application/xml"})
 def get_mime_type(p: Path):
     if p.is_dir():
         return "inode/directory"

@@ -9,7 +9,8 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpRequest, HttpResponse, FileResponse, JsonResponse, \
-    HttpResponseServerError
+    HttpResponseServerError, HttpResponseRedirect
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.cache import cache_control, never_cache
 from django.views.decorators.http import require_http_methods, condition, require_safe
@@ -89,25 +90,6 @@ def get_path_etag(request, path: Path):
     return hsh.hexdigest()
 
 
-@cache_control(no_cache=True)
-@require_http_methods(["GET"])
-@require_path_exists
-@condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
-def api_raw(request: HttpRequest, path: Path):
-    full_path = fs_root / path
-
-    if full_path.is_file():
-        return FileResponse(open(full_path, "rb"), content_type=get_mime_type(full_path))
-    else:
-        files = list(full_path.iterdir())
-        files.sort()
-        files = [*filter(lambda f: not f.is_file(), files),
-                 *filter(lambda f: f.is_file(), files)]
-        files = {p.name: str(p.relative_to(fs_root)) for p in files}
-
-        return JsonResponse(files)
-
-
 @require_http_methods(["GET"])
 @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
 def api_files(request: HttpRequest, path: Path):
@@ -118,7 +100,9 @@ def api_files(request: HttpRequest, path: Path):
         template_name = "file_404"
         title_msg = "does not exist"
     elif full_path.is_file():
-        return api_raw(request, path)
+        if get_mime_type(full_path) == "text/plain":
+            return HttpResponseRedirect(reverse("private:api", kwargs={"api": "notepad", "path": path}))
+        return api_raw.call(request, path)
     else:
         template_name = "files"
         title_msg = "Directory"
@@ -254,6 +238,43 @@ class FileHasher:
             return hsh
         else:
             return hsh.hexdigest()
+
+
+class api_raw(api_class):
+    @classmethod
+    def get_or_head(cls, request: HttpRequest, path: Path, is_get: bool):
+        full_path = fs_root / path
+
+        if full_path.is_file():
+            return FileResponse(open(full_path, "rb"), content_type=get_mime_type(full_path))
+        else:
+            files = list(full_path.iterdir())
+            files.sort()
+            files = [*filter(lambda f: not f.is_file(), files),
+                     *filter(lambda f: f.is_file(), files)]
+            files = {p.name: str(p.relative_to(fs_root)) for p in files}
+
+            return JsonResponse(files)
+
+    @classmethod
+    def post(cls, request: HttpRequest, path: Path):
+        full_path = fs_root / path
+
+        if not full_path.is_file():
+            raise UserError(f"Cannot write to {path}; is a directory")
+
+        full_path.write_bytes(request.body)
+
+        return HttpResponse(status=200)
+
+    @staticmethod
+    @cache_control(no_cache=True)
+    @require_http_methods(["GET", "POST", "HEAD"])
+    @require_path_exists
+    @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
+    def call(request: HttpRequest, path: Path):
+        cls = api_raw
+        return cls.dispatch(request, path)
 
 
 class api_file_ledger(api_class):
@@ -467,12 +488,24 @@ def api_cascade(request: HttpRequest, path: Path):
     })
 
 
+@require_safe
+@require_path_exists
+@condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
+def api_notepad(request: HttpRequest, path: Path):
+    path = Path(path)
+    return default_render(request, "private/notepad.html", {
+        "path": str(path),
+        "name": path.name,
+        "parent": path.parent})
+
+
 @login_required
 @permission_required("private.ffs")
 @cache_control(max_age=60 * 60)
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
-    valid_apis = ["raw", "files", "info", "icon", "file-packet", "file-ledger", "move", "new", "mkdir", "cascade"]
+    valid_apis = ["raw", "files", "info", "icon", "file-packet", "file-ledger", "move", "new", "mkdir", "cascade",
+                  "notepad"]
 
     if api not in valid_apis:
         raise UserError(f"The requested API does not exist: {api}, the only options are {valid_apis}")
@@ -485,7 +518,7 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
 
     match api:
         case "raw":
-            return api_raw(request, path)
+            return api_raw.call(request, path)
         case "files":
             return api_files(request, path)
         case "info":
@@ -504,5 +537,7 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
             return api_mkdir(request, path)
         case "cascade":
             return api_cascade(request, path)
+        case "notepad":
+            return api_notepad(request, path)
 
     return HttpResponseServerError("Did not configure my stuff correctly")

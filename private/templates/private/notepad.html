@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load utils %}
+
+{% block head %}
+    {% load_css "navigation" %}
+    {% load_css "files/notepad" %}
+
+    <title x-data x-text="name+' ('+$store.status+')'"></title>
+    <script>
+        function api_url(api, path) {
+            return "{% url "private:ffs" %}" + api + "/" + encodeURIComponent(path)
+        }
+
+        const name = "{{ name }}";
+        const parent = "{{ parent }}";
+        const current_path = "{{ path }}";
+        const csrf_token = "{{ csrf_token }}";
+
+        window.addEventListener("alpine:init", () => {
+            Alpine.store("text", "");
+            Alpine.store("status", "saved");
+        });
+    </script>
+    {% load_alpine %}
+    {% load_js "files/notepad" extra_args="defer" %}
+{% endblock %}
+
+{% block content_container %}
+    <a x-data :href="api_url('files', parent)">Back to overview</a>
+
+    <div x-data class="status-bar" :class="$store.status">
+
+    </div>
+    <label>
+        <span class="accessibility-only">File content</span>
+        <textarea x-data x-model="$store.text"
+                  @keydown="change()"
+                  @keydown.ctrl.s.window.prevent="save()"></textarea>
+    </label>
+{% endblock %}

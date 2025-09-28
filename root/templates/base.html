@@ -4,7 +4,9 @@
 <head>
     <META HTTP-EQUIV="content-type" CONTENT="text/html; charset=utf-8">
     <meta name="viewport" content="{{ viewport_options|default:"width=device-width,initial-scale=1" }}">
-    <title>{{ title|default:"Untitled Page" }}</title>
+    {% if title %}
+        <title>{{ title }}</title>
+    {% endif %}
     <meta name="author" content="{{ author|default:"Günthner" }}">
     <link rel="canonical" href="https://{{ request.get_host }}{{ request.path }}"/>
     {% load_css "style" %}
