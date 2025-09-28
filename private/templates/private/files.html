@@ -31,7 +31,8 @@
                   :class="$store.tab=='upload' && 'selected'"
                   x-data
                   @click="$store.tab='upload'"
-                  @keyup.u.window="$store.tab='upload'">Upload</button></span>
+                  @keyup.u.window="$store.tab='upload'">Upload</button>
+        <a x-data :href="api_url('cascade', current_path)">Image Cascade</a></span>
 
     <div id="file_view_container" class="tab-container" x-data x-cloak x-show="$store.tab=='view'">
         <table id="file_view" cellspacing="0">

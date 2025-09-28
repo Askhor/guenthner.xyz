@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load utils %}
+
+{% block head %}
+    {% load_css "navigation" %}
+    {% load_css "files/cascade" %}
+
+    <script>
+        const current_path = "{{ path }}";
+        const csrf_token = "{{ csrf_token }}";
+        const images_per_page = 30;
+
+        function api_url(api, path) {
+            return "{% url "private:ffs" %}" + api + "/" + encodeURIComponent(path)
+        }
+
+        window.addEventListener("alpine:init", () => {
+            Alpine.store("files", Alpine.reactive([]));
+            Alpine.store("page", 1);
+        });
+
+        function get_images() {
+            return Alpine.store("files")
+                .filter(f => f.type !== '' && image_mime_re.test(f.type));
+        }
+
+        function get_current_images() {
+            const page = Alpine.store("page");
+            const index = (page - 1) * images_per_page;
+            return get_images()
+                .slice(index, index + images_per_page);
+        }
+
+        function change_page(offset) {
+            const page_count = Math.ceil(get_images().length / images_per_page);
+            let new_page = Alpine.store("page") + offset;
+            if (new_page < 1) new_page = 1;
+            else if (new_page > page_count) new_page = page_count;
+            
+            Alpine.store("page", new_page);
+        }
+    </script>
+
+    {% load_alpine %}
+    {% load_js "files/load_files" extra_args="defer" %}
+    {% load_js "files/add_metadata" extra_args="defer" %}
+{% endblock %}
+{% block content_container %}
+    <header x-data>
+        <a :href="api_url('files', current_path)">Back to overview</a>
+        Page: <span x-text="$store.page"></span>
+        <button @click="change_page(-1)"
+                @keyup.left.window.prevent="change_page(-1)">Previous
+        </button>
+        <button @click="change_page(1)"
+                @keyup.right.window.prevent="change_page(1)">Next
+        </button>
+    </header>
+    <main>
+        <ul class="cascade">
+            <template x-data x-for="file of get_current_images()">
+                <li class="cascade">
+                    <a class="cascade" :href="api_url('files', file.path)">
+                        <img class="cascade"
+                             alt="" :alt="file.name" src="" :src="api_url('raw', file.path)">
+                    </a>
+                </li>
+            </template>
+        </ul>
+    </main>
+{% endblock %}

@@ -9,6 +9,17 @@ from django.utils.safestring import mark_safe
 register = template.Library()
 
 
+@register.simple_block_tag(takes_context=True)
+def define(context: dict, content, name):
+    context[f"template_{name}"] = content
+    return content
+
+
+@register.simple_tag(takes_context=True)
+def use(context: dict, name):
+    return context[f"template_{name}"]
+
+
 @register.simple_tag(takes_context=True)
 def load_js(context: dict, path: str, extra_args="") -> str:
     return mark_safe(

@@ -89,7 +89,7 @@ def get_path_etag(request, path: Path):
     return hsh.hexdigest()
 
 
-@never_cache
+@cache_control(no_cache=True)
 @require_http_methods(["GET"])
 @require_path_exists
 @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
@@ -124,10 +124,7 @@ def api_files(request: HttpRequest, path: Path):
         title_msg = "Directory"
         files = list(full_path.iterdir())
         files.sort()
-        extra_context = {
-            # "files": [f.relative_to(fs_root) for f in files if f.is_file()],
-            # "folders": [f.relative_to(fs_root) for f in files if not f.is_file()],
-            "net_block_size": settings.FFS_NET_BLOCK_SIZE}
+        extra_context = {"net_block_size": settings.FFS_NET_BLOCK_SIZE}
 
     return default_render(request, f"private/{template_name}.html", {
         "title": f"{path}: {title_msg}", **extra_context,
@@ -145,7 +142,7 @@ def api_icon(request: HttpRequest, path: Path):
         return HttpResponse(status=500)
 
 
-@never_cache
+@cache_control(no_cache=True)
 @require_safe
 @require_path_exists
 @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
@@ -461,12 +458,21 @@ class api_file_packet(api_class):
         return cls.dispatch(request, hsh)
 
 
+@require_safe
+@require_path_exists
+@condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
+def api_cascade(request: HttpRequest, path: Path):
+    return default_render(request, "private/cascade.html", {
+        "title": f"{path}", "path": path, "suppress_navbar": True
+    })
+
+
 @login_required
 @permission_required("private.ffs")
 @cache_control(max_age=60 * 60)
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
-    valid_apis = ["raw", "files", "info", "icon", "file-packet", "file-ledger", "move", "new", "mkdir"]
+    valid_apis = ["raw", "files", "info", "icon", "file-packet", "file-ledger", "move", "new", "mkdir", "cascade"]
 
     if api not in valid_apis:
         raise UserError(f"The requested API does not exist: {api}, the only options are {valid_apis}")
@@ -496,5 +502,7 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
             return api_new(request, path)
         case "mkdir":
             return api_mkdir(request, path)
+        case "cascade":
+            return api_cascade(request, path)
 
     return HttpResponseServerError("Did not configure my stuff correctly")
