@@ -7,6 +7,9 @@ import re
 import shutil
 from pathlib import Path
 
+import PIL
+from PIL import Image
+from PIL.ExifTags import TAGS
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpRequest, HttpResponse, FileResponse, JsonResponse, \
@@ -530,12 +533,37 @@ def api_notepad(request: HttpRequest, path: Path):
         "parent": path.parent})
 
 
+@require_safe
+@require_path_exists
+@condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
+def api_exif(request: HttpRequest, path: Path):
+    if request.method == "HEAD":
+        return HttpResponse(status=200)
+
+    full_path = fs_root / path
+
+    try:
+        img = Image.open(full_path)
+    except PIL.UnidentifiedImageError:
+        return HttpResponse(f"The file {path} is not an image or does not have exif metadata", status=400,
+                            content_type="text/plain;charset=utf-8")
+
+    exif = img.getexif()
+    data = {}
+
+    for key, value in exif.items():
+        name = TAGS[key]
+        data[name] = str(value)
+
+    return JsonResponse(data, status=200)
+
+
 @login_required
 @permission_required("private.ffs")
 @cache_control(max_age=60 * 60)
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
-    valid_apis = ["raw", "files", "info", "icon", "file-packet", "file-ledger", "move", "new", "mkdir", "rmdir",
+    valid_apis = ["raw", "files", "info", "icon", "exif", "file-packet", "file-ledger", "move", "new", "mkdir", "rmdir",
                   "cascade", "notepad"]
 
     if api not in valid_apis:
@@ -556,6 +584,8 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
             return api_info(request, path)
         case "icon":
             return api_icon(request, path)
+        case "exif":
+            return api_exif(request, path)
         case "file-packet":
             return api_file_packet.call(request, path)
         case "file-ledger":
