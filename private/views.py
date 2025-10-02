@@ -181,7 +181,7 @@ def api_move(request: HttpRequest, src: Path):
     full_dst = fs_root / dst
 
     if full_dst.exists():
-        return HttpResponse(f"The file at {dst} already exists", status=400)
+        return HttpResponse(f"The file at {dst} already exists", status=400, charset="text/plain;charset=utf-8")
 
     full_dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(full_src, full_dst)
@@ -210,6 +210,15 @@ def api_mkdir(request: HttpRequest, path: Path):
     else:
         full_path.mkdir(parents=True)
         return HttpResponse(status=201)
+
+
+@require_http_methods(["POST"])
+@require_path_exists
+def api_rmdir(request: HttpRequest, path: Path):
+    full_path = fs_root / path
+
+    full_path.rmdir()
+    return HttpResponse(status=200)
 
 
 class api_class:
@@ -526,8 +535,8 @@ def api_notepad(request: HttpRequest, path: Path):
 @cache_control(max_age=60 * 60)
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
-    valid_apis = ["raw", "files", "info", "icon", "file-packet", "file-ledger", "move", "new", "mkdir", "cascade",
-                  "notepad"]
+    valid_apis = ["raw", "files", "info", "icon", "file-packet", "file-ledger", "move", "new", "mkdir", "rmdir",
+                  "cascade", "notepad"]
 
     if api not in valid_apis:
         raise UserError(f"The requested API does not exist: {api}, the only options are {valid_apis}")
@@ -557,6 +566,8 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
             return api_new(request, path)
         case "mkdir":
             return api_mkdir(request, path)
+        case "rmdir":
+            return api_rmdir(request, path)
         case "cascade":
             return api_cascade(request, path)
         case "notepad":
