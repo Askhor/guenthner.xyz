@@ -3,6 +3,7 @@
 
 {% block head %}
     {% load_css "navigation" %}
+    {% load_css "files/simple_table" %}
     {% include "private/common.html" %}
 
     <title x-data x-text="get_name()">{{ name }}</title>
@@ -88,17 +89,28 @@
                 @keyup.delete.window.prevent="delete_current()">Delete
         </button>
     </div>
-    <div class="center">
-        <img alt="" src=""
-             x-data :alt="name" :src="api_url('raw', current_path + '/' + get_name())"
-             style="width: 90vw">
-    </div>
-    <div x-data x-show="Object.entries(current_exif()).length > 0">
-        <h3>Metadata:</h3>
-        <ul>
-            <template x-data x-for="entry in Object.entries(current_exif())">
-                <li><span x-text="entry[0]"></span>: <span x-text="entry[1]"></span></li>
-            </template>
-        </ul>
-    </div>
+    <p class="center">
+        <a x-data :href="api_url('raw', current_path + '/' + get_name())" style="width: 90vw; border: 1px solid black">
+            <img alt="" src=""
+                 x-data :alt="name" :src="api_url('raw', current_path + '/' + get_name())">
+        </a>
+    </p>
+    <p x-data x-show="Object.entries(current_exif()).length > 0">
+    <table>
+        <caption>Metadata</caption>
+        <thead>
+        <tr>
+            <td>Name</td>
+            <td>Value</td>
+        </tr>
+        </thead>
+        <tbody>
+        <template x-data x-for="entry in Object.entries(current_exif())">
+            <tr>
+                <td x-text="entry[0]"></td>
+                <td x-text="entry[1]"></td>
+            </tr>
+        </template>
+        </tbody>
+    </table></p>
 {% endblock %}
