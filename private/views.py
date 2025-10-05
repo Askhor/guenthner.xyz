@@ -550,10 +550,14 @@ def api_exif(request: HttpRequest, path: Path):
 
     exif = img.getexif()
     data = {}
+    num = 0
 
     for key, value in exif.items():
+        num += 1
         name = TAGS[key]
         data[name] = str(value)
+
+    data["Number of entries"] = num
 
     return JsonResponse(data, status=200)
 

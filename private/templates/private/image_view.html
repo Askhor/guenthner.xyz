@@ -24,10 +24,30 @@
             else return files[Alpine.store("index")].name;
         }
 
+        function load_current_exif() {
+            const index = Alpine.store("index");
+            const exif = Alpine.store("exif");
+
+            exif[index] = Alpine.reactive({});
+            document.dispatchEvent(new CustomEvent("loadexif", {detail: {name: get_name(), to: exif[index]}}))
+        }
+
+        function current_exif() {
+            const index = Alpine.store("index");
+            const exif = Alpine.store("exif");
+
+            if (!exif.hasOwnProperty(index)) {
+                load_current_exif();
+            }
+            return exif[index];
+        }
+
         window.addEventListener("alpine:init", () => {
             Alpine.store("files", Alpine.reactive([]));
             Alpine.store("index", 0);
+            Alpine.store("exif", Alpine.reactive({}));
         });
+
     </script>
     <style>
         .center {
@@ -72,5 +92,13 @@
         <img alt="" src=""
              x-data :alt="name" :src="api_url('raw', current_path + '/' + get_name())"
              style="width: 90vw">
+    </div>
+    <div x-data x-show="Object.entries(current_exif()).length > 0">
+        <h3>Metadata:</h3>
+        <ul>
+            <template x-data x-for="entry in Object.entries(current_exif())">
+                <li><span x-text="entry[0]"></span>: <span x-text="entry[1]"></span></li>
+            </template>
+        </ul>
     </div>
 {% endblock %}
