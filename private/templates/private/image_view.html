@@ -92,7 +92,7 @@
     <p class="center">
         <a x-data :href="api_url('raw', current_path + '/' + get_name())" style="width: 90vw; border: 1px solid black">
             <img alt="" src=""
-                 x-data :alt="name" :src="api_url('raw', current_path + '/' + get_name())">
+                 x-data :alt="name" :src="api_url('raw', current_path + '/' + get_name())" style="width: 100%">
         </a>
     </p>
     <p x-data x-show="Object.entries(current_exif()).length > 0">
