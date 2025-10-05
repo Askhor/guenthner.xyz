@@ -34,6 +34,9 @@
         }
 
         function current_exif() {
+            if (!Alpine.store("true_index"))
+                return {};
+
             const index = Alpine.store("index");
             const exif = Alpine.store("exif");
 
@@ -47,6 +50,7 @@
             Alpine.store("files", Alpine.reactive([]));
             Alpine.store("index", 0);
             Alpine.store("exif", Alpine.reactive({}));
+            Alpine.store("true_index", false);
         });
 
     </script>
@@ -55,6 +59,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
+        }
+
+        .space-before {
+            margin-top: 20px;
         }
 
         button {
@@ -89,28 +97,29 @@
                 @keyup.delete.window.prevent="delete_current()">Delete
         </button>
     </div>
-    <p class="center">
+    <div class="center">
         <a x-data :href="api_url('raw', current_path + '/' + get_name())" style="width: 90vw; border: 1px solid black">
             <img alt="" src=""
                  x-data :alt="name" :src="api_url('raw', current_path + '/' + get_name())" style="width: 100%">
         </a>
-    </p>
-    <p x-data x-show="Object.entries(current_exif()).length > 0">
-    <table>
-        <caption>Metadata</caption>
-        <thead>
-        <tr>
-            <td>Name</td>
-            <td>Value</td>
-        </tr>
-        </thead>
-        <tbody>
-        <template x-data x-for="entry in Object.entries(current_exif())">
+    </div>
+    <div class="space-before" x-data x-show="$store.true_index && Object.entries(current_exif()).length > 0">
+        <table>
+            <caption>Metadata</caption>
+            <thead>
             <tr>
-                <td x-text="entry[0]"></td>
-                <td x-text="entry[1]"></td>
+                <td>Name</td>
+                <td>Value</td>
             </tr>
-        </template>
-        </tbody>
-    </table></p>
+            </thead>
+            <tbody>
+            <template x-data x-for="entry in Object.entries(current_exif())">
+                <tr>
+                    <td x-text="entry[0]"></td>
+                    <td x-text="entry[1]"></td>
+                </tr>
+            </template>
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
