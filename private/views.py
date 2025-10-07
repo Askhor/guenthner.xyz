@@ -185,7 +185,7 @@ def api_move(request: HttpRequest, src: Path):
     full_dst = fs_root / dst
 
     if full_dst.exists():
-        return HttpResponse(f"The file at {dst} already exists", status=400, charset="text/plain;charset=utf-8")
+        return HttpResponse(f"The file at {dst} already exists", status=400, content_type="text/plain;charset=utf-8")
 
     full_dst.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(full_src, full_dst)

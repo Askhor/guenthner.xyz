@@ -73,6 +73,9 @@
                     <td @click.self="file.selected = !file.selected" x-text="file.size" style="text-align: right"></td>
                     <td @click.self="file.selected = !file.selected">
                         <button @click="rename_file(file)">Rename</button>
+                        <button x-show="file.type === 'application/zip'"
+                                @click="unzip(file.path)">Unzip
+                        </button>
                     </td>
                 </tr>
             </template>
