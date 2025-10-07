@@ -26,6 +26,9 @@ except FileNotFoundError:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ["DEBUG"] == "true" if "DEBUG" in os.environ else False
 
+LOGLEVEL = os.environ.get("LOGLEVEL", "INFO").upper()
+print(f"Log level is {LOGLEVEL}")
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -38,11 +41,11 @@ LOGGING = {
     },
     "handlers": {
         "default": {
-            "level": "INFO",
+            "level": LOGLEVEL,
             "class": "logging.StreamHandler",
             "formatter": "default"
         } if DEBUG else {
-            "level": "INFO",
+            "level": LOGLEVEL,
             "class": "logging.FileHandler",
             "filename": "/var/log/django/guenthner_xyz.log",
             "formatter": "default"
@@ -51,7 +54,7 @@ LOGGING = {
     "loggers": {
         "root": {
             "handlers": ["default"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": False,
         },
         "django": {
@@ -61,7 +64,7 @@ LOGGING = {
         },
         "my": {
             "handlers": ["default"],
-            "level": "DEBUG",
+            "level": LOGLEVEL,
             "propagate": False,
         }
     }
