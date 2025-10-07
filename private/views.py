@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import shutil
+import zipfile
 from pathlib import Path
 
 import PIL
@@ -580,13 +581,98 @@ def view_ffs_info(request: HttpRequest):
     })
 
 
+def zip_file_errors(zip: zipfile.ZipFile) -> list:
+    """
+    Reasons that a zip file might be dangerous (extract to locations other than current directory)
+    """
+    reasons = []
+
+    for file in zip.filelist:
+        if file.is_dir(): continue
+        path = Path(file.filename)
+        if path.is_absolute(): reasons.append(f"File {path} is an absolute")
+        if any(part == '..' for part in path.parts): reasons.append(f"File {path} contains ..")
+
+    return reasons
+
+
+def safe_extract(zip: zipfile.ZipFile, path: Path):
+    for file in zip.filelist:
+        if file.is_dir():
+            log.debug(f"Skipping directory {file.filename}")
+            continue
+        new_path = path / file.filename
+        if new_path.exists():
+            log.debug(f"Skipping file {new_path} as it already exists")
+            continue
+        new_path.parent.mkdir(parents=True, exist_ok=True)
+        zip.extract(file, path)
+        log.debug(f"Extracted file {file.filename} to {new_path}")
+
+
+def add_file(zip: zipfile.ZipFile, root: Path, path: Path):
+    log.debug(f"Adding file {path}")
+    if path.is_dir():
+        zip.mkdir(str(path.relative_to(root)))
+
+        for file in path.iterdir():
+            add_file(zip, root, file)
+    else:
+        zip.write(path, str(path.relative_to(root)), compress_type=zipfile.ZIP_LZMA)
+
+
+@require_http_methods(["POST"])
+def api_zip(request: HttpRequest, path: Path):
+    full_path = fs_root / path
+
+    if full_path.exists():
+        return HttpResponse(f"The file {path} already exists", status=400, content_type="text/plain;charset=utf-8")
+
+    try:
+        data = json.loads(request.body.decode())
+        files = data["files"]
+    except json.JSONDecodeError:
+        return HttpResponse(status=400, content_type="text/plain; charset=utf-8",
+                            content="The request was not valid JSON")
+    except (KeyError, TypeError):
+        return HttpResponse(status=400, content_type="text/plain; charset=utf-8",
+                            content="The request did not contain the files key (or something related)")
+
+    files = [fs_root / file for file in files]
+    non_existent = [file for file in files if not file.exists()]
+
+    if len(non_existent) > 0:
+        return HttpResponse(f"The file(s) {", ".join(map(str, non_existent))} do not exist", status=400,
+                            content_type="text/plain; charset=utf-8", )
+
+    with zipfile.ZipFile(full_path, "w") as zip:
+        for file in files:
+            add_file(zip, file.parent, file)
+
+    return HttpResponse(status=200)
+
+
+@require_http_methods(["POST"])
+@require_path_exists
+def api_unzip(request: HttpRequest, path: Path):
+    full_path = fs_root / path
+
+    with zipfile.ZipFile(full_path, 'r') as zip:
+        errors = zip_file_errors(zip)
+        if len(errors) == 0:
+            safe_extract(zip, fs_root / path.parent)
+            return HttpResponse(status=200)
+        else:
+            return JsonResponse({"errors": errors}, status=400)
+
+
 @login_required
 @permission_required("private.ffs")
 @cache_control(max_age=60 * 60)
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):
     valid_apis = ["raw", "files", "info", "icon", "exif", "file-packet", "file-ledger", "move", "new", "mkdir", "rmdir",
-                  "cascade", "notepad"]
+                  "cascade", "notepad", "zip", "unzip"]
 
     if api not in valid_apis:
         raise UserError(f"The requested API does not exist: {api}, the only options are {valid_apis}")
@@ -624,5 +710,9 @@ def view_api(request: HttpRequest, api: str, path: Path = Path("")):
             return api_cascade(request, path)
         case "notepad":
             return api_notepad(request, path)
+        case "zip":
+            return api_zip(request, path)
+        case "unzip":
+            return api_unzip(request, path)
 
     return HttpResponseServerError("Did not configure my stuff correctly")
