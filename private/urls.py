@@ -6,6 +6,7 @@ from . import views
 app_name = "private"
 
 ffs_urls = [path("", views.view_index, name="ffs"),
+            path("ffs-info", views.view_ffs_info, name="ffs-info"),
             path("<str:api>/", views.view_api, name="api"),
             path("<str:api>/<path:path>", views.view_api, name="api"), ]
 

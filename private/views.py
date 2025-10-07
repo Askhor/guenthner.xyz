@@ -564,6 +564,24 @@ def api_exif(request: HttpRequest, path: Path):
 
 @login_required
 @permission_required("private.ffs")
+@require_safe
+def view_ffs_info(request: HttpRequest):
+    if request.method == "HEAD":
+        return HttpResponse(status=200, content_type="application/json")
+
+    disk_usage = shutil.disk_usage("/")
+
+    return JsonResponse({
+        "disk": {
+            "total": disk_usage.total,
+            "used": disk_usage.used,
+            "free": disk_usage.free,
+        }
+    })
+
+
+@login_required
+@permission_required("private.ffs")
 @cache_control(max_age=60 * 60)
 @exception_to_response(UserError, 400)
 def view_api(request: HttpRequest, api: str, path: Path = Path("")):

@@ -3,6 +3,34 @@
 
 {% block head %}
     {% load_css "navigation" %}
+    {% include "private/common.html" %}
+
+    <script>
+        document.addEventListener("alpine:init", async () => {
+            Alpine.store("disk", Alpine.reactive({}));
+
+            const response = await fetch(api_url("ffs-info"));
+            if (response.status === 200){
+                const json = await response.json();
+                Alpine.store("disk", Alpine.reactive(json.disk));
+            } else {
+                console.log(`Got a ${response.status} from the server on ffs-info`);
+            }
+        });
+
+        function get_file_size_human(bytes) {
+            let level = 0;
+            while (bytes >= 1000 && level < 3) {
+                level += 1;
+                bytes /= 1000;
+            }
+            const endings = "BKMG";
+
+            return `${Math.round(bytes * 100) / 100}${endings.charAt(level)}`;
+        }
+    </script>
+
+    {% load_alpine %}
 {% endblock %}
 
 {% block content %}
@@ -10,7 +38,13 @@
     <h3>Hi {{ request.user }}, you are successfully logged in.</h3>
 
     <ul class="navigation">
-        <li><a href="{% url "private:api" "files" %}">Files</a></li>
+        <li>
+            <a href="{% url "private:api" "files" %}">Files</a>
+            <span x-data x-cloak x-show="Object.entries($store.disk).length > 0">
+                (<span x-text="get_file_size_human($store.disk.used)"></span>/<span
+                    x-text="get_file_size_human($store.disk.total)"></span>
+                used)</span>
+        </li>
         <li>
             <form action="{% url 'logout' %}" method="post">
                 {% csrf_token %}

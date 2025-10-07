@@ -1,6 +1,10 @@
 <script>
-    function api_url(api, path, query = null) {
-        let url = "{% url "private:ffs" %}" + api + "/" + encodeURIComponent(path);
+    function api_url(api, path = null, query = null) {
+        let url = "{% url "private:ffs" %}" + api;
+
+        if (path !== null) {
+            url += "/" + encodeURIComponent(path);
+        }
 
         if (query !== null) {
             url += "?" + query;
