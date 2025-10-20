@@ -20,6 +20,8 @@ server_root = Path("/var/www/guenthner.xyz")
 @condition(etag_func=lambda *a, **kw: "A")
 def view_index(request: HttpRequest):
     return default_render(request, "root/index.html", {
+        "first_name": "Jonathan",
+        "last_name": "Günthner",
         "title": "Günthner's Webpage",
         "semester": int(math.ceil((datetime.now() - datetime(2024, 4, 1)).total_seconds() / (6 * 30 * 24 * 60 * 60))),
     })
@@ -114,6 +116,7 @@ def view_convolutions(request: HttpRequest):
     return default_render(request, "root/creations/convolutions.html", {
         "title": "Convolutions",
     })
+
 
 @cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
 @condition(etag_func=lambda *a, **kw: "A")
