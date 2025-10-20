@@ -2,6 +2,22 @@
 {% load utils %}
 {% load humanize %}
 {% block head %}
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            "name": "{{ first_name }} {{ last_name }}",
+            "familyName": "{{ last_name }}",
+            "givenName": "{{ first_name }}",
+            "affiliation": {
+                 "@type": "CollegeOrUniversity",
+                 "name": "University of Augsburg",
+                 "sameAs": "https://en.wikipedia.org/wiki/University_of_Augsburg"
+            },
+            "email": "j@guenthner.xyz"
+        }
+    </script>
+
     {{ "The personal Webpage of Jonathan Günthner. I am a mathematician at the University in Augsburg, I also like to code hence this website."|add_description }}
     {% load_css "navigation" %}
     {% load_css "random_math_field" %}
@@ -59,7 +75,7 @@
     {% load_js "client_name" extra_args="async" %}
 {% endblock %}
 {% block content %}
-    <h1>The personal webpage of Jonathan Günthner
+    <h1>The personal webpage of {{ first_name }} {{ last_name }}
     </h1>
     <div>
         I am a mathematician that likes to code
@@ -86,7 +102,7 @@
     <div>
         <pre>
 Kind regards,
-J. Günthner</pre>
+J. {{ last_name }}</pre>
     </div>
     <div>
         <pre>
