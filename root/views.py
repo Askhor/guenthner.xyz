@@ -110,6 +110,13 @@ def view_chat(request: HttpRequest):
 
 @cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
 @condition(etag_func=lambda *a, **kw: "A")
+def view_convolutions(request: HttpRequest):
+    return default_render(request, "root/creations/convolutions.html", {
+        "title": "Convolutions",
+    })
+
+@cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
+@condition(etag_func=lambda *a, **kw: "A")
 def view_math(request: HttpRequest):
     return default_render(request, "root/math/math.html", {
         "title": "The Math-Corner"
