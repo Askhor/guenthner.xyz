@@ -59,20 +59,13 @@
     {% load_js "client_name" extra_args="async" %}
 {% endblock %}
 {% block content %}
-    <h1>The personal webpage of
-        <a class="plain-link" href="https://en.wikipedia.org/wiki/Jonathan_(name)">Jonathan</a>
-        <a class="plain-link" href="https://en.wikipedia.org/wiki/G%C3%BCnthner">Günthner</a>
+    <h1>The personal webpage of Jonathan Günthner
     </h1>
-    <!--<div>
-        <h3 style="display: inline">Hello dear <i class="client-name"><?php echo client_name(); ?></i>,</h3>
-        <span style="width: 1em; display: inline-block;"></span>
-        <?php include "$root/dev/code/php/name_changer.php" ?>
-    </div>-->
     <div>
         I am a mathematician that likes to code
         <span class="barely-visible">
-        (and a <a class="plain-link" href="https://de.wikipedia.org/wiki/Eichh%C3%B6rnchen">squirrel</a>)
-    </span>.
+        (and a <a class="plain-link" href="https://de.wikipedia.org/wiki/Eichh%C3%B6rnchen">squirrel</a>).
+    </span>
     </div>
     <div>
         I am currently stu<a class="opti-bold" href="https://en.wikipedia.org/wiki/Pun">dying</a> in
@@ -103,7 +96,8 @@ Here are a couple of links:</pre>
             <li><a href="{% url 'root:math' %}">Math</a></li>
             <li><a href="{% url 'root:pretty' %}">Pretty</a></li>
             <li><a href="{% url 'root:memes' %}">Memes</a></li>
-            <li><a href="{% url 'root:creations' %}" style="font-family: monospace; padding: 6px 1px 4px 1px">Creations</a></li>
+            <li><a href="{% url 'root:creations' %}"
+                   style="font-family: monospace; padding: 6px 1px 4px 1px">Creations</a></li>
             <li>My Mail Address: <a href="mailto:j@guenthner.xyz">j@guenthner.xyz</a></li>
             <li>My github: <a href="https://github.com/Askhor">Askhor</a></li>
             <li style="display: none"><a rel="me" href="https://mastodon.social/@guenthner">Mastodon</a></li>
