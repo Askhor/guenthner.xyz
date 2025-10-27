@@ -1,4 +1,4 @@
-<div class="navigation">
+<nav class="navigation">
     {% if parent_paths %}
         {% for parent_path in parent_paths %}
             <a href="{{ schost }}{{ parent_path.path }}">{{ parent_path.name }}</a>
@@ -6,4 +6,4 @@
     {% else %}
         <div>Missing data for navigation bar</div>
     {% endif %}
-</div>
+</nav>
