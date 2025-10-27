@@ -24,6 +24,7 @@ def view_index(request: HttpRequest):
         "last_name": "Günthner",
         "title": "Günthner's Webpage",
         "semester": int(math.ceil((datetime.now() - datetime(2024, 4, 1)).total_seconds() / (6 * 30 * 24 * 60 * 60))),
+        "is_family": request.user.is_authenticated and request.user.has_perm("private.ffs")
     })
 
 

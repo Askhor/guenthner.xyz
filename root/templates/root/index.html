@@ -117,6 +117,9 @@ Here are a couple of links:</pre>
             <li>My github: <a href="https://github.com/Askhor">Askhor</a></li>
             <li style="display: none"><a rel="me" href="https://mastodon.social/@guenthner">Mastodon</a></li>
             <li>My <a href="https://guenthner.xyz/info/J. Günthner - Key.gpg" download>GPG Public Key</a></li>
+            {% if is_family %}
+                <li><a href="{% url "root:index" %}private">FFS</a></li>
+            {% endif %}
         </ul>
     </div>
 {% endblock %}
