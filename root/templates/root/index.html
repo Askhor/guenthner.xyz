@@ -118,7 +118,7 @@ Here are a couple of links:</pre>
             <li style="display: none"><a rel="me" href="https://mastodon.social/@guenthner">Mastodon</a></li>
             <li>My <a href="https://guenthner.xyz/info/J. Günthner - Key.gpg" download>GPG Public Key</a></li>
             {% if is_family %}
-                <li><a href="{% url "root:index" %}private">FFS</a></li>
+                <li><a href="{% url "root:index" %}private">FFS</a> (you are logged in as {{ user }})</li>
             {% endif %}
         </ul>
     </div>
