@@ -51,13 +51,18 @@
         <a :href="api_url('files', current_path)">Back to overview</a>
         Page: <span x-text="$store.page"></span>/<span x-text="page_count()"></span>
         <span x-show="page_count() > 1">
-        <button @click="change_page(-1)"
-                @keyup.left.window.prevent="change_page(-1)">Previous
-        </button>
-        <button @click="change_page(1)"
-                @keyup.right.window.prevent="change_page(1)">Next
-        </button>
-            </span>
+            <button @click="change_page(-1)"
+                    @keyup.left.window.prevent="change_page(-1)">Previous
+            </button>
+            <button @click="change_page(1)"
+                    @keyup.right.window.prevent="change_page(1)">Next
+            </button>
+        </span>
+        <!-- Experiment for dynamic include_subdirectories -->
+        <!--<label>
+            <input type="checkbox" x-data x-model.boolean="$store.include_subdirectories">
+            Include Subdirectories
+        </label>-->
     </header>
     <main>
         <ul class="cascade">
