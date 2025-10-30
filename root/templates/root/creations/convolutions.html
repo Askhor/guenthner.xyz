@@ -84,11 +84,15 @@
             <div class="controls">
                 <label>
                     <span x-data x-text='"Width: " + Number.parseFloat($store.brush.radius).toFixed(2)'></span>
-                    <input type="range" x-data x-model.number="$store.brush.radius" min="1" max="10" step="0.05">
+                    <input type="range" x-data x-model.number="$store.brush.radius" min="1" max="10" step="0.05"
+                           @keyup.window.p="$store.brush.radius = 1">
                 </label>
                 <label>
                     <span x-data x-text='"Value: " + Number.parseFloat($store.brush.value).toFixed(2)'></span>
-                    <input type="range" x-data x-model.number="$store.brush.value" min="0" max="1" step="0.05">
+                    <input type="range" x-data x-model.number="$store.brush.value" min="0" max="1" step="0.05"
+                           @keyup.window.w="$store.brush.value = 1"
+                           @keyup.window.b="$store.brush.value = 0"
+                           @keyup.window.g="$store.brush.value = 0.5">
                 </label>
                 <div class="color-view">
                 </div>
@@ -115,10 +119,9 @@
             <h2>What do the colors mean?</h2>
 
             On the input canvas the numerical meanings of the colors are from black (0) to white (1), but on the kernel
-            canvas the colors go from black (-1) over gray (0) to white (1). This means that the identity kernel is mostly gray.
+            canvas the colors go from black (-1) over gray (0) to white (1). This means that the identity kernel is
+            mostly gray.
             This can be used to create kernels with negative entries.
-
-
         </div>
     </main>
 {% endblock %}
