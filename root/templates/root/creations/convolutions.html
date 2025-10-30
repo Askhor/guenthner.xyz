@@ -83,25 +83,42 @@
             <canvas id="kernel_canvas" class="drawable">Canvas seem to be unsupported here :(</canvas>
             <div class="controls">
                 <label>
-                    Width
-                    <input type="range" x-data x-model.number="$store.brush.radius" min="1" max="10" step="0.01">
+                    <span x-data x-text='"Width: " + Number.parseFloat($store.brush.radius).toFixed(2)'></span>
+                    <input type="range" x-data x-model.number="$store.brush.radius" min="1" max="10" step="0.05">
                 </label>
                 <label>
-                    Value
-                    <input type="range" x-data x-model.number="$store.brush.value" min="0" max="1" step="0.01">
+                    <span x-data x-text='"Value: " + Number.parseFloat($store.brush.value).toFixed(2)'></span>
+                    <input type="range" x-data x-model.number="$store.brush.value" min="0" max="1" step="0.05">
                 </label>
-                <div x-data>
-                    Stroke:
-                    <span x-text="Number.parseFloat($store.brush.radius).toFixed(2)"></span> width,
-                    <span x-text="Number.parseFloat($store.brush.value).toFixed(2)"></span> value
-                </div>
                 <div class="color-view">
                 </div>
             </div>
         </div>
         <div class="paper-center">
             <h1>Information</h1>
-            brb, then finish.
+
+            Now, I won't explain what convolutions are or what convolutions are in the context of image processing.
+            This is just a fun toy for drawing your own image kernels and applying them to self drawn images.
+
+            The three canvases in order are:
+            <ol>
+                <li>Input Canvas (Can be drawn on)</li>
+                <li>Output Canvas (Shows the result of applying the kernel to the input)</li>
+                <li>Kernel Canvas (That's the small one)</li>
+            </ol>
+
+            <h2>How to draw?</h2>
+
+            Just click and drag on the canvas on the left or on the bottom. The value slider moves the color from black
+            (0) to white (1).
+
+            <h2>What do the colors mean?</h2>
+
+            On the input canvas the numerical meanings of the colors are from black (0) to white (1), but on the kernel
+            canvas the colors go from black (-1) over gray (0) to white (1). This means that the identity kernel is mostly gray.
+            This can be used to create kernels with negative entries.
+
+
         </div>
     </main>
 {% endblock %}
