@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ ""|add_description }}
+    {% load_css "navigation" %}
+
+    <!-- KaTeX here -->
+    <!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.css"
+          integrity="sha384-2+1yEhq+grOgz1BVYTZPyTlMXrDxnjN1By9/ba94JqJhva6wFm2Hb+URQX53v" crossorigin="anonymous">
+    <script id="katex-script" defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.js"
+            integrity="sha384-C5yZTsgLOfuizO9kb+hrB8uSBwwvZ4yenKWU0KmWl+7bkL6Tph/KbcOa3S4zdoRE"
+            crossorigin="anonymous"></script>-->
+
+    <style>
+        .horiz-flex {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-content: space-evenly;
+        }
+
+        .main-canvas {
+            width: 40vw;
+            height: 40vw;
+        }
+
+        canvas {
+            margin: 20px;
+            image-rendering: pixelated;
+            border: 10px double black;
+            border-radius: 10px;
+        }
+
+        #kernel_canvas {
+            width: 10vw;
+            height: 10vw;
+        }
+
+        label {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .color-view {
+            width: 0;
+            height: 0;
+            border: 10px solid black;
+            border-radius: 10px;
+            align-self: center;
+            margin: 10px;
+        }
+    </style>
+
+    <script>
+        window.addEventListener("alpine:init", () => {
+            Alpine.store("brush", Alpine.reactive({
+                "value": 0.5,
+                "radius": 1.0
+            }));
+        });
+    </script>
+
+    {% load_alpine %}
+    {% load_js "util/my_webgl" extra_args="defer" %}
+    {% load_js "convolutions" extra_args="defer" %}
+    {% load_js "util/draw_on_canvas" extra_args="defer" %}
+{% endblock %}
+{% block content_container %}
+    {% include "navigation_bar.html" %}
+
+    <main>
+        <div class="horiz-flex">
+            <canvas id="in_canvas" class="main-canvas drawable">Canvas seem to be unsupported here :(</canvas>
+            <canvas id="out_canvas" class="main-canvas">Canvas seem to be unsupported here :(</canvas>
+        </div>
+        <div class="horiz-flex">
+            <canvas id="kernel_canvas" class="drawable">Canvas seem to be unsupported here :(</canvas>
+            <div class="controls">
+                <label>
+                    Width
+                    <input type="range" x-data x-model.number="$store.brush.radius" min="1" max="10" step="0.01">
+                </label>
+                <label>
+                    Value
+                    <input type="range" x-data x-model.number="$store.brush.value" min="0" max="1" step="0.01">
+                </label>
+                <div x-data>
+                    Stroke:
+                    <span x-text="Number.parseFloat($store.brush.radius).toFixed(2)"></span> width,
+                    <span x-text="Number.parseFloat($store.brush.value).toFixed(2)"></span> value
+                </div>
+                <div class="color-view">
+                </div>
+            </div>
+        </div>
+        <div class="paper-center">
+            <h1>Information</h1>
+            brb, then finish.
+        </div>
+    </main>
+{% endblock %}
