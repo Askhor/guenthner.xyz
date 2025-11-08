@@ -32,6 +32,7 @@ fs_root = settings.FFS_FS_ROOT
 file_packet_cache = settings.FFS_FILE_PACKET_CACHE
 
 img_mime = re.compile("image/.+")
+video_mime = re.compile("video/.+")
 
 
 @cache_control(max_age=settings.CACHE_MIDDLEWARE_SECONDS)
@@ -104,6 +105,14 @@ def image_view(request: HttpRequest, path: Path):
     })
 
 
+def video_view(request: HttpRequest, path: Path):
+    return default_render(request, "private/video_view.html", {
+        "path": path,
+        "name": path.name,
+        "parent": path.parent
+    })
+
+
 @require_http_methods(["GET"])
 @condition(etag_func=get_path_etag, last_modified_func=get_path_last_mod)
 def api_files(request: HttpRequest, path: Path):
@@ -119,6 +128,8 @@ def api_files(request: HttpRequest, path: Path):
             return HttpResponseRedirect(reverse("private:api", kwargs={"api": "notepad", "path": path}))
         if img_mime.fullmatch(mime_type):
             return image_view(request, path)
+        elif video_mime.fullmatch(mime_type):
+            return video_view(request, path)
 
         return api_raw.call(request, path)
     else:

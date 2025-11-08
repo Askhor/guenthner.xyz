@@ -10,7 +10,7 @@
             Alpine.store("disk", Alpine.reactive({}));
 
             const response = await fetch(api_url("ffs-info"));
-            if (response.status === 200){
+            if (response.status === 200) {
                 const json = await response.json();
                 Alpine.store("disk", Alpine.reactive(json.disk));
             } else {
