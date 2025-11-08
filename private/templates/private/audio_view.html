@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load utils %}
+
+{% block head %}
+    {% load_css "navigation" %}
+    {#    {% load_css "files/simple_table" %}#}
+    {% include "private/common.html" %}
+
+    <title x-data x-text="name">{{ name }}</title>
+
+    <script>
+        const current_path = "{{ parent }}";
+        const name = "{{ name }}";
+        const csrf_token = "{{ csrf_token }}";
+    </script>
+    <style>
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+    </style>
+
+    {% load_alpine %}
+{% endblock %}
+
+{% block content %}
+    <div class="center">
+        <audio x-data controls :src="api_url('raw', current_path + '/' + name)"
+
+               style="width: 90vw; border: 1px solid black" preload="metadata">
+
+        </audio>
+    </div>
+{% endblock %}

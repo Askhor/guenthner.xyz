@@ -97,20 +97,23 @@ def get_path_etag(request, path: Path):
     return hsh.hexdigest()
 
 
-def image_view(request: HttpRequest, path: Path):
-    return default_render(request, "private/image_view.html", {
-        "path": path,
-        "name": path.name,
-        "parent": path.parent
-    })
+class MediaView:
+    def __init__(self, keyword):
+        self.keyword = keyword
+        self.re_mime = re.compile(f"{keyword}/.+")
+
+    def matches(self, string):
+        return self.re_mime.fullmatch(string)
+
+    def view(self, request: HttpRequest, path: Path):
+        return default_render(request, f"private/{self.keyword}_view.html", {
+            "path": path,
+            "name": path.name,
+            "parent": path.parent
+        })
 
 
-def video_view(request: HttpRequest, path: Path):
-    return default_render(request, "private/video_view.html", {
-        "path": path,
-        "name": path.name,
-        "parent": path.parent
-    })
+media_views = list(map(MediaView, ["image", "video", "audio"]))
 
 
 @require_http_methods(["GET"])
@@ -126,10 +129,10 @@ def api_files(request: HttpRequest, path: Path):
         mime_type = get_mime_type(full_path)
         if mime_type == "text/plain":
             return HttpResponseRedirect(reverse("private:api", kwargs={"api": "notepad", "path": path}))
-        if img_mime.fullmatch(mime_type):
-            return image_view(request, path)
-        elif video_mime.fullmatch(mime_type):
-            return video_view(request, path)
+
+        for mv in media_views:
+            if mv.matches(mime_type):
+                return mv.view(request, path)
 
         return api_raw.call(request, path)
     else:
