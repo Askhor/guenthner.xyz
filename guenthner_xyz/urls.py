@@ -34,7 +34,7 @@ account_urls = [path("login", LoginView.as_view(template_name="special/login.htm
                      name="change-password-done")
                 ]
 
-indexed_routes = "index,math,eratosthenes,mandelbrot,paper,pretty,memes,words,pictures,creations,chat,cowsay".split(",")
+indexed_routes = "index,math,eratosthenes,mandelbrot,paper,pretty,words,pictures,memes,creations,chat,cowsay,convolutions".split(",")
 
 debug_static_routes = []
 
