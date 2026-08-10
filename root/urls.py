@@ -7,7 +7,8 @@ app_name = "root"
 creations_urls = [path("", views.view_creations, name="creations"),
                   path("chat", views.view_chat, name="chat"),
                   path("cowsay", views.view_cowsay, name="cowsay"),
-                  path("convolutions", views.view_convolutions, name="convolutions"),]
+                  path("convolutions", views.view_convolutions, name="convolutions"),
+                  path("net builder", views.view_net_builder, name="net_builder"), ]
 
 pretty_urls = [path("", views.view_pretty, name="pretty"),
                path("words", views.view_words, name="words"),

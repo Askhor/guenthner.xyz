@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load utils %}
+{% block head %}
+    {{ ""|add_description }}
+    {% load_css "navigation" %}
+
+    <style>
+        svg {
+            border: 1px solid black;
+            border-radius: 10px;
+        }
+    </style>
+
+    <script>
+        window.addEventListener("alpine:init", () => {
+            Alpine.store("transform", [
+                Alpine.reactive([1, 0, 0]),
+                Alpine.reactive([0, 1, 0]),
+                Alpine.reactive([50, 50, 1]),
+            ]);
+            Alpine.store("scale", 10);
+            Alpine.store("angle", 0);
+
+            Alpine.effect(() => {
+                const s = Alpine.store("scale");
+                const a = Alpine.store("angle");
+                const t = Alpine.store("transform");
+
+                t[0][0] = s * Math.cos(a);
+                t[1][0] = -s * Math.sin(a);
+                t[0][1] = s * Math.sin(a);
+                t[1][1] = s * Math.cos(a);
+            })
+        });
+    </script>
+
+    {% load_alpine %}
+    {% load_js "creations/net_builder" extra_args="defer" %}
+{% endblock %}
+{% block content %}
+    <svg id="net_builder" width="100" height="100" viewBox="0 0 100 100" style="width:100%;height:auto"
+         x-data @pointerup="place_root_if_missing()">
+        <style>
+            polygon {
+                stroke-width: 0.1;
+            }
+        </style>
+    </svg>
+{% endblock %}
